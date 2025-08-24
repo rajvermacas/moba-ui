@@ -75,3 +75,41 @@ export interface ConnectionStatus {
   fastapi_status: 'connected' | 'disconnected' | 'error';
   mcp_status: 'connected' | 'disconnected' | 'error';
 }
+
+/**
+ * Session management types
+ */
+export interface ChatSession {
+  id: string;
+  title: string;
+  createdAt: Date;
+  lastMessageAt: Date;
+  messageCount: number;
+  isActive: boolean;
+}
+
+export interface SessionCreateResponse {
+  success: boolean;
+  thread_id: string;
+  message: string;
+}
+
+export interface SessionClearResponse {
+  success: boolean;
+  message: string;
+  thread_id: string;
+  cleared_components: string[];
+}
+
+export interface SessionListResponse {
+  success: boolean;
+  active_sessions: string[];
+  session_count: number;
+}
+
+export interface SessionState {
+  sessions: Map<string, ChatSession>;
+  activeSessionId: string | null;
+  isLoading: boolean;
+  error: string | null;
+}

@@ -7,9 +7,12 @@ import { RotateCcw, Trash2, AlertTriangle, Sun, Moon } from 'lucide-react';
 import { useChat } from '../hooks/useChat';
 import { useConnectionStatus } from '../hooks/useConnectionStatus';
 import { useTheme } from '../contexts/ThemeContext';
+import { useSession } from '../contexts/SessionContext';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import ConnectionStatus from './ConnectionStatus';
+import NewChatButton from './NewChatButton';
+import SessionList from './SessionList';
 import clsx from 'clsx';
 
 interface ChatInterfaceProps {
@@ -54,9 +57,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className = '' }) => {
     await sendMessage(content);
   };
 
-  const handleClearChat = () => {
-    if (window.confirm('Are you sure you want to clear the chat history?')) {
+  const { clearCurrentSession } = useSession();
+  
+  const handleClearChat = async () => {
+    if (window.confirm('Are you sure you want to clear the current session\'s chat history?')) {
       clearMessages();
+      await clearCurrentSession();
     }
   };
 
@@ -81,6 +87,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className = '' }) => {
           
           {/* Header Actions */}
           <div className="flex items-center gap-3">
+            <SessionList />
+            
+            <NewChatButton disabled={!connectionStatus.isConnected} />
+            
+            <div className="h-6 w-px bg-gray-300 dark:bg-gray-600" />
+            
             <ConnectionStatus
               status={connectionStatus}
               onRefresh={checkStatus}
@@ -104,7 +116,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className = '' }) => {
             <button
               onClick={handleClearChat}
               disabled={messages.length === 0}
-              title="Clear chat history"
+              title="Clear current session"
               className={clsx(
                 'p-2 rounded-lg transition-all duration-200',
                 'bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500/50',

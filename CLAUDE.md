@@ -1,0 +1,1 @@
+- use context7 and sub agents extensively

@@ -6,10 +6,12 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { ChatMessage, QueryResult } from '../types/chat.types';
 import { apiService } from '../services/api';
+import { useSession } from '../contexts/SessionContext';
 
 interface UseChatProps {
   maxMessages?: number;
   persistMessages?: boolean;
+  sessionId?: string;
 }
 
 interface UseChatReturn {
@@ -22,18 +24,23 @@ interface UseChatReturn {
   isTyping: boolean;
 }
 
-const STORAGE_KEY = 'talk2tables_chat_messages';
+const STORAGE_KEY_PREFIX = 'talk2tables_chat_messages_';
 
 export const useChat = ({
   maxMessages = 100,
-  persistMessages = true
+  persistMessages = true,
+  sessionId: overrideSessionId
 }: UseChatProps = {}): UseChatReturn => {
+  const { currentSessionId, updateSessionLastMessage } = useSession();
+  const activeSessionId = overrideSessionId || currentSessionId;
+  
   // Load messages from localStorage if persistence is enabled
   const loadPersistedMessages = useCallback((): ChatMessage[] => {
-    if (!persistMessages) return [];
+    if (!persistMessages || !activeSessionId) return [];
     
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
+      const storageKey = `${STORAGE_KEY_PREFIX}${activeSessionId}`;
+      const stored = localStorage.getItem(storageKey);
       if (stored) {
         const parsed = JSON.parse(stored);
         // Convert timestamp strings back to Date objects
@@ -46,25 +53,40 @@ export const useChat = ({
       console.warn('Failed to load persisted messages:', error);
     }
     return [];
-  }, [persistMessages]);
+  }, [persistMessages, activeSessionId]);
 
-  const [messages, setMessages] = useState<ChatMessage[]>(loadPersistedMessages);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isTyping, setIsTyping] = useState(false);
   
   const lastUserMessageRef = useRef<string>('');
 
+  // Load messages when session changes
+  useEffect(() => {
+    if (activeSessionId) {
+      const loadedMessages = loadPersistedMessages();
+      setMessages(loadedMessages);
+      // Set session ID in API service
+      apiService.setSessionId(activeSessionId);
+    } else {
+      setMessages([]);
+    }
+  }, [activeSessionId, loadPersistedMessages]);
+  
   // Persist messages to localStorage when they change
   useEffect(() => {
-    if (persistMessages && messages.length > 0) {
+    if (persistMessages && messages.length > 0 && activeSessionId) {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+        const storageKey = `${STORAGE_KEY_PREFIX}${activeSessionId}`;
+        localStorage.setItem(storageKey, JSON.stringify(messages));
+        // Update session's last message time
+        updateSessionLastMessage(activeSessionId);
       } catch (error) {
         console.warn('Failed to persist messages:', error);
       }
     }
-  }, [messages, persistMessages]);
+  }, [messages, persistMessages, activeSessionId, updateSessionLastMessage]);
 
   // Helper function to add a message
   const addMessage = useCallback((message: Omit<ChatMessage, 'id' | 'timestamp'>) => {
@@ -177,12 +199,12 @@ export const useChat = ({
         content: content.trim()
       });
 
-      // Send to API
+      // Send to API with session ID
       const response = await apiService.sendChatCompletion({
         messages: recentMessages,
         max_tokens: 2000,
         temperature: 0.7
-      });
+      }, activeSessionId || undefined);
 
       if (response.choices && response.choices.length > 0) {
         const choice = response.choices[0];
@@ -231,10 +253,11 @@ export const useChat = ({
   const clearMessages = useCallback(() => {
     setMessages([]);
     setError(null);
-    if (persistMessages) {
-      localStorage.removeItem(STORAGE_KEY);
+    if (persistMessages && activeSessionId) {
+      const storageKey = `${STORAGE_KEY_PREFIX}${activeSessionId}`;
+      localStorage.removeItem(storageKey);
     }
-  }, [persistMessages]);
+  }, [persistMessages, activeSessionId]);
 
   return {
     messages,

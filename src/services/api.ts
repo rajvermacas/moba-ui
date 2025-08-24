@@ -7,12 +7,16 @@ import {
   ChatCompletionRequest, 
   ChatCompletionResponse, 
   HealthResponse, 
-  ApiError 
+  ApiError,
+  SessionCreateResponse,
+  SessionClearResponse,
+  SessionListResponse
 } from '../types/chat.types';
 
 class ApiService {
   private client: AxiosInstance;
   private baseURL: string;
+  private currentSessionId: string | null = null;
 
   constructor() {
     // Support both Vite and CRA environment variables
@@ -80,13 +84,28 @@ class ApiService {
   }
 
   /**
+   * Set the current session ID for API calls
+   */
+  setSessionId(sessionId: string | null): void {
+    this.currentSessionId = sessionId;
+  }
+
+  /**
    * Send a chat completion request
    */
-  async sendChatCompletion(request: ChatCompletionRequest): Promise<ChatCompletionResponse> {
+  async sendChatCompletion(request: ChatCompletionRequest, sessionId?: string): Promise<ChatCompletionResponse> {
     try {
+      const headers: any = {};
+      const activeSessionId = sessionId || this.currentSessionId;
+      
+      if (activeSessionId) {
+        headers['X-Thread-Id'] = activeSessionId;
+      }
+      
       const response: AxiosResponse<ChatCompletionResponse> = await this.client.post(
         '/chat/completions',
-        request
+        request,
+        { headers }
       );
       return response.data;
     } catch (error) {
@@ -163,6 +182,49 @@ class ApiService {
       return true;
     } catch (error) {
       return false;
+    }
+  }
+
+  /**
+   * Session Management APIs
+   */
+  
+  /**
+   * Create a new session
+   */
+  async createNewSession(): Promise<SessionCreateResponse> {
+    try {
+      const response: AxiosResponse<SessionCreateResponse> = await this.client.post('/sessions/new');
+      return response.data;
+    } catch (error) {
+      console.error('Create session error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Clear/delete a specific session
+   */
+  async clearSession(threadId: string): Promise<SessionClearResponse> {
+    try {
+      const response: AxiosResponse<SessionClearResponse> = await this.client.delete(`/sessions/${threadId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Clear session error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * List all active sessions
+   */
+  async listSessions(): Promise<SessionListResponse> {
+    try {
+      const response: AxiosResponse<SessionListResponse> = await this.client.get('/sessions');
+      return response.data;
+    } catch (error) {
+      console.error('List sessions error:', error);
+      throw error;
     }
   }
 }
