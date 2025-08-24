@@ -1,0 +1,20 @@
+
+> react-chatbot@0.1.0 build
+> react-scripts build
+
+Creating an optimized production build...
+Failed to compile.
+
+[eslint] 
+src/components/QueryResults.tsx
+  Line 36:41:  React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                react-hooks/rules-of-hooks
+  Line 37:39:  React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                react-hooks/rules-of-hooks
+  Line 38:45:  React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                react-hooks/rules-of-hooks
+  Line 39:39:  React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                react-hooks/rules-of-hooks
+  Line 46:24:  React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+  Line 57:22:  React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+  Line 89:25:  React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+
+Search for the keywords to learn more about each error.
+
+

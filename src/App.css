@@ -1,0 +1,37 @@
+/* 
+ * Minimal CSS for Material UI app
+ * Most styling is handled by Material UI theme
+ */
+
+/* Ensure smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Remove default margin and ensure full height */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+/* Root app container */
+#root {
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Code syntax highlighting for message content */
+pre code {
+  display: block;
+  overflow-x: auto;
+}
+
+/* Ensure proper text selection styling */
+::selection {
+  background-color: rgba(211, 47, 47, 0.3); /* Red selection */
+}
+
+::-moz-selection {
+  background-color: rgba(211, 47, 47, 0.3); /* Red selection for Firefox */
+}
