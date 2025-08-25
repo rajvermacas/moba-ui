@@ -2,6 +2,8 @@
  * Type definitions for chat interface and API responses
  */
 
+import { VisualizationSpec } from './visualization.types';
+
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant' | 'system';
@@ -10,6 +12,7 @@ export interface ChatMessage {
   isLoading?: boolean;
   error?: string;
   queryResult?: QueryResult;
+  visualization?: VisualizationSpec;
 }
 
 export interface QueryResult {
@@ -19,6 +22,8 @@ export interface QueryResult {
   error?: string;
   row_count?: number;
   execution_time?: number;
+  query?: string;
+  visualization?: VisualizationSpec;
 }
 
 export interface ChatCompletionRequest {
@@ -45,6 +50,7 @@ export interface ChatCompletionResponse {
     };
     finish_reason: string | null;
     query_result?: QueryResult;
+    visualization?: VisualizationSpec;
   }>;
   usage?: {
     prompt_tokens: number;

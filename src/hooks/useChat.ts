@@ -213,6 +213,9 @@ export const useChat = ({
         // First try to get query results from the response structure
         let queryResult = choice.query_result || undefined;
         
+        // Get visualization spec from the response
+        const visualization = choice.visualization || queryResult?.visualization || undefined;
+        
         // If not found, fall back to parsing from content
         if (!queryResult) {
           queryResult = processQueryResults(assistantResponse);
@@ -222,7 +225,8 @@ export const useChat = ({
         updateMessage(assistantMessageId, {
           content: assistantResponse,
           isLoading: false,
-          queryResult
+          queryResult,
+          visualization
         });
       } else {
         throw new Error('No response from assistant');

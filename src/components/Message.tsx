@@ -5,7 +5,7 @@
 import React from 'react';
 import { User, Bot, Copy, Clock, AlertCircle, Loader2 } from 'lucide-react';
 import { ChatMessage } from '../types/chat.types';
-import QueryResults from './QueryResults';
+import { DataVisualization } from './visualization';
 import clsx from 'clsx';
 
 interface MessageProps {
@@ -133,13 +133,33 @@ const Message: React.FC<MessageProps> = ({ message }) => {
                 {formatContent(message.content)}
               </div>
               
-              {/* Show query results if available */}
+              {/* Show query results with visualization if available */}
               {message.queryResult && message.queryResult.data && (
                 <div className="mt-4 pt-4 border-t border-gray-300 dark:border-gray-600">
                   <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                     Query Results:
                   </h4>
-                  <QueryResults queryResult={message.queryResult} />
+                  <DataVisualization 
+                    spec={message.queryResult.visualization || message.visualization || {
+                      chart_type: 'table',
+                      recommended: true,
+                      alternatives: [],
+                      column_types: {},
+                      config: {},
+                      data: {
+                        rows: message.queryResult.data || [],
+                        columns: message.queryResult.columns || []
+                      },
+                      metadata: {
+                        row_count: message.queryResult.row_count || 0,
+                        query: message.queryResult.query || ''
+                      }
+                    }}
+                    queryResult={message.queryResult}
+                    showTypeSelector={true}
+                    showExportButton={true}
+                    className="mt-2"
+                  />
                 </div>
               )}
               
