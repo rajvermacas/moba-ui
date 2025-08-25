@@ -19,6 +19,12 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     
+    /* Path mapping */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    
     /* Compatibility */
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,

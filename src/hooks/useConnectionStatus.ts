@@ -81,7 +81,7 @@ export const useConnectionStatus = ({
   }, []);
 
   const startMonitoring = useCallback(() => {
-    if (isMonitoring) {
+    if (intervalRef.current) {
       return; // Already monitoring
     }
 
@@ -92,7 +92,7 @@ export const useConnectionStatus = ({
     
     // Set up interval
     intervalRef.current = setInterval(checkStatus, checkInterval);
-  }, [isMonitoring, checkStatus, checkInterval]);
+  }, [checkStatus, checkInterval]);
 
   const stopMonitoring = useCallback(() => {
     setIsMonitoring(false);
@@ -106,14 +106,27 @@ export const useConnectionStatus = ({
   // Auto-start monitoring if enabled
   useEffect(() => {
     if (autoStart) {
-      startMonitoring();
+      // Check if not already monitoring
+      if (!intervalRef.current) {
+        setIsMonitoring(true);
+        
+        // Initial check
+        checkStatus();
+        
+        // Set up interval
+        intervalRef.current = setInterval(checkStatus, checkInterval);
+      }
     }
 
     // Cleanup on unmount
     return () => {
-      stopMonitoring();
+      setIsMonitoring(false);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = undefined;
+      }
     };
-  }, [autoStart]);
+  }, [autoStart, checkStatus, checkInterval]);
 
   // Handle window focus - check status when user returns to tab
   useEffect(() => {

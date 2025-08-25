@@ -122,8 +122,12 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({ children }) =>
           activeSessionId,
         }));
       } else {
-        // No sessions exist, create a new one
-        createNewSession();
+        // No sessions exist, will create one after initial load
+        setState(prev => ({
+          ...prev,
+          sessions: new Map(),
+          activeSessionId: null,
+        }));
       }
     } catch (error) {
       console.error('Failed to load sessions:', error);
@@ -150,6 +154,7 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({ children }) =>
     try {
       // Generate a new session ID (will be replaced by API response)
       const tempSessionId = 'session_' + uuidv4().substring(0, 8);
+      let sessionId = tempSessionId;
       
       // Try to call the API to create a new session
       try {
@@ -162,60 +167,46 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({ children }) =>
         
         if (response.ok) {
           const data = await response.json();
-          const sessionId = data.thread_id || tempSessionId;
-          
-          const newSession: ChatSession = {
-            id: sessionId,
-            title: `Chat ${state.sessions.size + 1}`,
-            createdAt: new Date(),
-            lastMessageAt: new Date(),
-            messageCount: 0,
-            isActive: true,
-          };
-          
-          const updatedSessions = new Map(state.sessions);
-          updatedSessions.set(sessionId, newSession);
-          
-          saveSessions(updatedSessions);
-          localStorage.setItem(STORAGE_KEYS.ACTIVE_SESSION, sessionId);
-          
-          setState(prev => ({
-            ...prev,
-            sessions: updatedSessions,
-            activeSessionId: sessionId,
-            isLoading: false,
-          }));
-          
-          return sessionId;
+          sessionId = data.thread_id || tempSessionId;
         }
       } catch (apiError) {
         console.warn('API session creation failed, using local session:', apiError);
       }
       
-      // Fallback to local session creation if API fails
-      const newSession: ChatSession = {
-        id: tempSessionId,
-        title: `Chat ${state.sessions.size + 1}`,
-        createdAt: new Date(),
-        lastMessageAt: new Date(),
-        messageCount: 0,
-        isActive: true,
-      };
+      // Create new session using functional state update
+      setState(prev => {
+        const newSession: ChatSession = {
+          id: sessionId,
+          title: `Chat ${prev.sessions.size + 1}`,
+          createdAt: new Date(),
+          lastMessageAt: new Date(),
+          messageCount: 0,
+          isActive: true,
+        };
+        
+        const updatedSessions = new Map(prev.sessions);
+        updatedSessions.set(sessionId, newSession);
+        
+        // Save to localStorage
+        try {
+          localStorage.setItem(
+            STORAGE_KEYS.SESSIONS,
+            JSON.stringify(Array.from(updatedSessions.entries()))
+          );
+          localStorage.setItem(STORAGE_KEYS.ACTIVE_SESSION, sessionId);
+        } catch (saveError) {
+          console.error('Failed to save session to localStorage:', saveError);
+        }
+        
+        return {
+          ...prev,
+          sessions: updatedSessions,
+          activeSessionId: sessionId,
+          isLoading: false,
+        };
+      });
       
-      const updatedSessions = new Map(state.sessions);
-      updatedSessions.set(tempSessionId, newSession);
-      
-      saveSessions(updatedSessions);
-      localStorage.setItem(STORAGE_KEYS.ACTIVE_SESSION, tempSessionId);
-      
-      setState(prev => ({
-        ...prev,
-        sessions: updatedSessions,
-        activeSessionId: tempSessionId,
-        isLoading: false,
-      }));
-      
-      return tempSessionId;
+      return sessionId;
     } catch (error) {
       console.error('Failed to create new session:', error);
       setState(prev => ({ 
@@ -225,7 +216,7 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({ children }) =>
       }));
       throw error;
     }
-  }, [state.sessions, saveSessions]);
+  }, []);
 
   // Switch to a different session
   const switchSession = useCallback((sessionId: string) => {
@@ -259,33 +250,54 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({ children }) =>
       // Remove from local storage
       localStorage.removeItem(`${STORAGE_KEYS.MESSAGES_PREFIX}${sessionId}`);
       
-      const updatedSessions = new Map(state.sessions);
-      updatedSessions.delete(sessionId);
-      
-      // If this was the active session, switch to another or create new
-      let newActiveSessionId = state.activeSessionId;
-      if (state.activeSessionId === sessionId) {
-        if (updatedSessions.size > 0) {
-          newActiveSessionId = Array.from(updatedSessions.keys())[0];
-        } else {
-          // No sessions left, create a new one
-          const newSessionId = await createNewSession();
-          newActiveSessionId = newSessionId;
-          return; // createNewSession already updates state
+      // Use functional state update to avoid stale closure
+      setState(prev => {
+        const updatedSessions = new Map(prev.sessions);
+        updatedSessions.delete(sessionId);
+        
+        // If this was the active session, switch to another
+        let newActiveSessionId = prev.activeSessionId;
+        if (prev.activeSessionId === sessionId) {
+          if (updatedSessions.size > 0) {
+            newActiveSessionId = Array.from(updatedSessions.keys())[0];
+          } else {
+            // No sessions left, will need to create one
+            newActiveSessionId = null;
+          }
         }
-      }
+        
+        // Save to localStorage
+        try {
+          localStorage.setItem(
+            STORAGE_KEYS.SESSIONS,
+            JSON.stringify(Array.from(updatedSessions.entries()))
+          );
+          if (newActiveSessionId) {
+            localStorage.setItem(STORAGE_KEYS.ACTIVE_SESSION, newActiveSessionId);
+          }
+        } catch (saveError) {
+          console.error('Failed to save after deletion:', saveError);
+        }
+        
+        return {
+          ...prev,
+          sessions: updatedSessions,
+          activeSessionId: newActiveSessionId,
+          isLoading: false,
+        };
+      });
       
-      saveSessions(updatedSessions);
-      if (newActiveSessionId) {
-        localStorage.setItem(STORAGE_KEYS.ACTIVE_SESSION, newActiveSessionId);
-      }
+      // If no sessions left, create a new one
+      const currentState = await new Promise<SessionState>(resolve => {
+        setState(prev => {
+          resolve(prev);
+          return prev;
+        });
+      });
       
-      setState(prev => ({
-        ...prev,
-        sessions: updatedSessions,
-        activeSessionId: newActiveSessionId,
-        isLoading: false,
-      }));
+      if (currentState.sessions.size === 0) {
+        await createNewSession();
+      }
     } catch (error) {
       console.error('Failed to delete session:', error);
       setState(prev => ({ 
@@ -294,7 +306,7 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({ children }) =>
         error: 'Failed to delete session' 
       }));
     }
-  }, [state.sessions, state.activeSessionId, saveSessions, createNewSession]);
+  }, [createNewSession]);
 
   // Clear current session (remove messages but keep session)
   const clearCurrentSession = useCallback(async () => {
@@ -409,7 +421,19 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({ children }) =>
   // Initialize on mount
   useEffect(() => {
     loadSessions();
-  }, []);
+  }, []); // Only run once on mount
+
+  // Create default session if none exists after initial load
+  useEffect(() => {
+    // Small delay to ensure loadSessions has completed
+    const timer = setTimeout(() => {
+      if (!state.isLoading && state.sessions.size === 0 && !state.activeSessionId) {
+        createNewSession();
+      }
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, []); // Only run once after mount
 
   const value: SessionContextType = {
     currentSessionId: state.activeSessionId,

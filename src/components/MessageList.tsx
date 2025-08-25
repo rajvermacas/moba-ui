@@ -15,8 +15,7 @@ interface MessageListProps {
 
 const MessageList: React.FC<MessageListProps> = ({ 
   messages, 
-  isTyping = false,
-  className = '' 
+  isTyping = false
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);

@@ -13,7 +13,7 @@ interface MessageProps {
   className?: string;
 }
 
-const Message: React.FC<MessageProps> = ({ message, className = '' }) => {
+const Message: React.FC<MessageProps> = ({ message }) => {
   const formatTimestamp = (timestamp: Date): string => {
     return timestamp.toLocaleTimeString([], { 
       hour: '2-digit', 

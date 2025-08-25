@@ -25,8 +25,7 @@ interface QueryResultsProps {
 }
 
 const QueryResults: React.FC<QueryResultsProps> = ({ 
-  queryResult, 
-  className = '' 
+  queryResult
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortColumn, setSortColumn] = useState<string | null>(null);

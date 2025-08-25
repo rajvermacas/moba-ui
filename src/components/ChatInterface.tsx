@@ -51,7 +51,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className = '' }) => {
   // Check status once on component mount (page load/reload)
   useEffect(() => {
     checkStatus();
-  }, [checkStatus]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
 
   const handleSendMessage = async (content: string) => {
     await sendMessage(content);

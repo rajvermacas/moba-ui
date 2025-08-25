@@ -18,8 +18,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
   onSendMessage,
   disabled = false,
   placeholder = "Ask about your database or type SQL...",
-  maxLength = 5000,
-  className = ''
+  maxLength = 5000
 }) => {
   const [message, setMessage] = useState('');
   const textFieldRef = useRef<HTMLTextAreaElement>(null);
