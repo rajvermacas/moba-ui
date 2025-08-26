@@ -24,6 +24,27 @@ export const DataVisualization: React.FC<DataVisualizationProps> = ({
   const [isExporting, setIsExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Extract the actual data array from the spec
+  const chartData = useMemo(() => {
+    // Handle nested data structure from backend
+    if (spec.data && typeof spec.data === 'object' && 'data' in spec.data) {
+      return (spec.data as any).data;
+    }
+    return spec.data;
+  }, [spec.data]);
+
+  // Validate data structure
+  React.useEffect(() => {
+    if (!Array.isArray(chartData)) {
+      const errorMsg = 'Invalid data structure: expected array of objects';
+      console.error(errorMsg, { received: chartData, originalSpec: spec.data });
+      setError(errorMsg);
+      if (onError) {
+        onError(new Error(errorMsg));
+      }
+    }
+  }, [chartData, spec.data, onError]);
+
   // Available chart types based on spec
   const availableTypes: ChartType[] = useMemo(() => {
     const types = new Set<ChartType>([spec.chart_type]);
@@ -55,17 +76,22 @@ export const DataVisualization: React.FC<DataVisualizationProps> = ({
     try {
       const { format, filename = 'chart-data', includeMetadata = false } = options;
 
+      // Ensure data is valid array before exporting
+      if (!Array.isArray(chartData) || chartData.length === 0) {
+        throw new Error('No data available to export');
+      }
+
       switch (format) {
         case 'csv': {
           // Export as CSV
-          const headers = Object.keys(spec.data[0]);
+          const headers = Object.keys(chartData[0]);
           const csvContent = [
             includeMetadata ? [`# ${spec.metadata?.title || 'Chart Data'}`] : [],
             includeMetadata ? [`# Generated: ${new Date().toLocaleString()}`] : [],
             includeMetadata ? [`# Chart Type: ${selectedType}`] : [],
             includeMetadata ? [''] : [],
             headers,
-            ...spec.data.map(row => headers.map(header => {
+            ...chartData.map(row => headers.map(header => {
               const value = row[header];
               return typeof value === 'string' && value.includes(',') 
                 ? `"${value}"` 
@@ -91,13 +117,13 @@ export const DataVisualization: React.FC<DataVisualizationProps> = ({
                 ...spec.metadata,
                 exportedAt: new Date().toISOString(),
                 chartType: selectedType,
-                totalRecords: spec.data.length
+                totalRecords: chartData.length
               }
             }),
             chartType: selectedType,
             config: spec.config,
             columnTypes: spec.column_types,
-            data: spec.data
+            data: chartData
           };
 
           const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
@@ -131,7 +157,7 @@ export const DataVisualization: React.FC<DataVisualizationProps> = ({
     } finally {
       setIsExporting(false);
     }
-  }, [spec, selectedType, onError]);
+  }, [chartData, spec, selectedType, onError]);
 
   // Quick export as CSV
   const handleQuickExport = useCallback(() => {
@@ -141,7 +167,7 @@ export const DataVisualization: React.FC<DataVisualizationProps> = ({
   // Chart title and description
   const chartTitle = spec.metadata?.title || `${selectedType.charAt(0).toUpperCase() + selectedType.slice(1)} Chart`;
   const chartDescription = spec.metadata?.description || 
-    `Data visualization showing ${spec.data.length} records`;
+    `Data visualization showing ${Array.isArray(chartData) ? chartData.length : 0} records`;
 
   // Get current configuration for selected type
   const currentConfig = selectedType === spec.chart_type 
@@ -180,7 +206,7 @@ export const DataVisualization: React.FC<DataVisualizationProps> = ({
             <div className="flex items-center gap-2">
               {/* Data info badge */}
               <span className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400 rounded-full">
-                {spec.data.length} records
+                {Array.isArray(chartData) ? chartData.length : 0} records
               </span>
 
               {/* Recommended badge */}
@@ -263,20 +289,32 @@ export const DataVisualization: React.FC<DataVisualizationProps> = ({
                 </div>
                 <div>
                   <div className="font-medium text-gray-600 dark:text-gray-400 mb-1">Data Points</div>
-                  <div className="text-gray-800 dark:text-gray-200">{spec.data.length}</div>
+                  <div className="text-gray-800 dark:text-gray-200">{Array.isArray(chartData) ? chartData.length : 0}</div>
                 </div>
               </div>
             </div>
           )}
 
           {/* Main chart */}
-          <ChartRenderer
-            type={selectedType}
-            data={spec.data}
-            config={currentConfig}
-            onDataClick={onDataClick}
-            onError={handleChartError}
-          />
+          {Array.isArray(chartData) ? (
+            <ChartRenderer
+              type={selectedType}
+              data={chartData}
+              config={currentConfig}
+              onDataClick={onDataClick}
+              onError={handleChartError}
+            />
+          ) : (
+            <div className="flex items-center justify-center h-64 text-red-500">
+              <div className="text-center">
+                <div className="text-4xl mb-2">⚠️</div>
+                <p>Invalid Data Structure</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Expected array of objects but received {typeof spec.data}
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Insights */}
           {spec.metadata?.insights && spec.metadata.insights.length > 0 && (

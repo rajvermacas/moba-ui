@@ -17,6 +17,9 @@ export interface VisualizationSpec {
     insights?: string[];
     dataSource?: string;
     generatedAt?: string;
+    row_count?: number;
+    column_count?: number;
+    query?: string;
   };
 }
 

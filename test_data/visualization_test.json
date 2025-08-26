@@ -1,0 +1,57 @@
+{
+  "visualization": {
+    "chart_type": "bar",
+    "recommended": true,
+    "alternatives": ["table", "line", "pie"],
+    "column_types": {
+      "name": "categorical",
+      "total_sales": "numeric"
+    },
+    "config": {
+      "type": "bar",
+      "responsive": true,
+      "maintainAspectRatio": false,
+      "xAxis": {
+        "field": "name",
+        "type": "category"
+      },
+      "yAxis": {
+        "fields": ["total_sales"],
+        "type": "value"
+      }
+    },
+    "data": {
+      "data": [
+        {
+          "category": "Laptop",
+          "total_sales": 1299.99
+        },
+        {
+          "category": "Standing Desk",
+          "total_sales": 599.99
+        },
+        {
+          "category": "Monitor 27\"",
+          "total_sales": 449.99
+        },
+        {
+          "category": "Keyboard",
+          "total_sales": 89.99
+        },
+        {
+          "category": "USB-C Hub",
+          "total_sales": 49.99
+        }
+      ],
+      "categories": ["Laptop", "Standing Desk", "Monitor 27\"", "Keyboard", "USB-C Hub"],
+      "series": ["total_sales"],
+      "type": "categorical",
+      "chartType": "bar"
+    },
+    "metadata": {
+      "row_count": 5,
+      "column_count": 2,
+      "query": "\nSELECT\n  p.name,\n  SUM(oi.quantity * oi.unit_price) AS total_sales\nFROM products AS p\nJOIN order_items AS oi\n  ON p.id = oi.product_id\nGROUP BY\n  p.name\nORDER BY\n  total_sales DESC\nLIMIT 5;\n"
+    }
+  }
+}

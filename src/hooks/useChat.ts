@@ -210,11 +210,11 @@ export const useChat = ({
         const choice = response.choices[0];
         const assistantResponse = choice.message.content;
         
-        // First try to get query results from the response structure
-        let queryResult = choice.query_result || undefined;
+        // First try to get query results from the message (it's inside message in the actual response)
+        let queryResult = choice.message.query_result || undefined;
         
-        // Get visualization spec from the response
-        const visualization = choice.visualization || queryResult?.visualization || undefined;
+        // Get visualization spec from the response (it's at root level)
+        const visualization = response.visualization || queryResult?.visualization || undefined;
         
         // If not found, fall back to parsing from content
         if (!queryResult) {

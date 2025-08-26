@@ -146,16 +146,12 @@ const Message: React.FC<MessageProps> = ({ message }) => {
                       alternatives: [],
                       column_types: {},
                       config: {},
-                      data: {
-                        rows: message.queryResult.data || [],
-                        columns: message.queryResult.columns || []
-                      },
+                      data: message.queryResult.data || [],
                       metadata: {
                         row_count: message.queryResult.row_count || 0,
                         query: message.queryResult.query || ''
                       }
                     }}
-                    queryResult={message.queryResult}
                     showTypeSelector={true}
                     showExportButton={true}
                     className="mt-2"

@@ -10,7 +10,8 @@ import {
   PieChart as PieChartIcon, 
   AreaChart as AreaChartIcon,
   ScatterChart,
-  Grid3X3
+  Grid3X3,
+  Table
 } from 'lucide-react';
 
 const CHART_ICONS: Record<ChartType, React.ComponentType<any>> = {
@@ -19,7 +20,8 @@ const CHART_ICONS: Record<ChartType, React.ComponentType<any>> = {
   pie: PieChartIcon,
   area: AreaChartIcon,
   scatter: ScatterChart,
-  heatmap: Grid3X3
+  heatmap: Grid3X3,
+  table: Table
 };
 
 const CHART_LABELS: Record<ChartType, string> = {
@@ -28,7 +30,8 @@ const CHART_LABELS: Record<ChartType, string> = {
   pie: 'Pie Chart',
   area: 'Area Chart',
   scatter: 'Scatter Plot',
-  heatmap: 'Heatmap'
+  heatmap: 'Heatmap',
+  table: 'Table'
 };
 
 const CHART_DESCRIPTIONS: Record<ChartType, string> = {
@@ -37,7 +40,8 @@ const CHART_DESCRIPTIONS: Record<ChartType, string> = {
   pie: 'Display proportions of a whole',
   area: 'Show cumulative values over time',
   scatter: 'Explore relationships between variables',
-  heatmap: 'Visualize data intensity in a matrix'
+  heatmap: 'Visualize data intensity in a matrix',
+  table: 'Display data in a tabular format'
 };
 
 export const ChartTypeSelector: React.FC<ChartTypeSelectorProps> = ({

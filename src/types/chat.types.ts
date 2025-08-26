@@ -47,16 +47,16 @@ export interface ChatCompletionResponse {
     message: {
       role: string;
       content: string;
+      query_result?: QueryResult;
     };
     finish_reason: string | null;
-    query_result?: QueryResult;
-    visualization?: VisualizationSpec;
   }>;
   usage?: {
     prompt_tokens: number;
     completion_tokens: number;
     total_tokens: number;
   };
+  visualization?: VisualizationSpec;
 }
 
 export interface ApiError {
