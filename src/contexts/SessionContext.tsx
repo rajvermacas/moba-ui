@@ -310,62 +310,73 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({ children }) =>
 
   // Clear current session (remove messages but keep session)
   const clearCurrentSession = useCallback(async () => {
-    if (!state.activeSessionId) return;
-    
-    try {
-      // Try to call the API to clear the session
-      try {
-        const response = await fetch(
-          `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001'}/sessions/${state.activeSessionId}`,
-          {
-            method: 'DELETE',
-          }
-        );
-        
-        if (!response.ok && response.status !== 404) {
-          console.warn('API session clear returned error:', response.status);
-        }
-      } catch (apiError) {
-        console.warn('API session clear failed, continuing with local clear:', apiError);
-      }
+    setState(prev => {
+      if (!prev.activeSessionId) return prev;
       
-      // Clear messages from localStorage
-      localStorage.removeItem(`${STORAGE_KEYS.MESSAGES_PREFIX}${state.activeSessionId}`);
+      const activeSessionId = prev.activeSessionId;
+      
+      // Async operations that don't depend on state
+      (async () => {
+        try {
+          // Try to call the API to clear the session
+          try {
+            const response = await fetch(
+              `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001'}/sessions/${activeSessionId}`,
+              {
+                method: 'DELETE',
+              }
+            );
+            
+            if (!response.ok && response.status !== 404) {
+              console.warn('API session clear returned error:', response.status);
+            }
+          } catch (apiError) {
+            console.warn('API session clear failed, continuing with local clear:', apiError);
+          }
+          
+          // Clear messages from localStorage
+          localStorage.removeItem(`${STORAGE_KEYS.MESSAGES_PREFIX}${activeSessionId}`);
+        } catch (error) {
+          console.error('Failed to clear session:', error);
+        }
+      })();
       
       // Update session metadata
-      const updatedSessions = new Map(state.sessions);
-      const session = updatedSessions.get(state.activeSessionId);
+      const updatedSessions = new Map(prev.sessions);
+      const session = updatedSessions.get(activeSessionId);
       if (session) {
         session.messageCount = 0;
         session.lastMessageAt = new Date();
-        updatedSessions.set(state.activeSessionId, session);
+        updatedSessions.set(activeSessionId, session);
         saveSessions(updatedSessions);
         
-        setState(prev => ({
+        return {
           ...prev,
           sessions: updatedSessions,
-        }));
+        };
       }
-    } catch (error) {
-      console.error('Failed to clear session:', error);
-    }
-  }, [state.activeSessionId, state.sessions, saveSessions]);
+      return prev;
+    });
+  }, [saveSessions]);
 
   // Update session title
   const updateSessionTitle = useCallback((sessionId: string, title: string) => {
-    const updatedSessions = new Map(state.sessions);
-    const session = updatedSessions.get(sessionId);
-    if (session) {
-      session.title = title;
-      updatedSessions.set(sessionId, session);
-      saveSessions(updatedSessions);
-      
-      setState(prev => ({
-        ...prev,
-        sessions: updatedSessions,
-      }));
-    }
-  }, [state.sessions, saveSessions]);
+    setState(prev => {
+      const updatedSessions = new Map(prev.sessions);
+      const session = updatedSessions.get(sessionId);
+      if (session) {
+        session.title = title;
+        updatedSessions.set(sessionId, session);
+        saveSessions(updatedSessions);
+        
+        return {
+          ...prev,
+          sessions: updatedSessions,
+        };
+      }
+      return prev;
+    });
+  }, [saveSessions]);
 
   // Load active sessions from API
   const loadActiveSessions = useCallback(async () => {
@@ -402,21 +413,24 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({ children }) =>
 
   // Update session's last message timestamp and count
   const updateSessionLastMessage = useCallback((sessionId: string) => {
-    const updatedSessions = new Map(state.sessions);
-    const session = updatedSessions.get(sessionId);
-    if (session) {
-      session.lastMessageAt = new Date();
-      const messages = getSessionMessages(sessionId);
-      session.messageCount = messages.length;
-      updatedSessions.set(sessionId, session);
-      saveSessions(updatedSessions);
-      
-      setState(prev => ({
-        ...prev,
-        sessions: updatedSessions,
-      }));
-    }
-  }, [state.sessions, saveSessions, getSessionMessages]);
+    setState(prev => {
+      const updatedSessions = new Map(prev.sessions);
+      const session = updatedSessions.get(sessionId);
+      if (session) {
+        session.lastMessageAt = new Date();
+        const messages = getSessionMessages(sessionId);
+        session.messageCount = messages.length;
+        updatedSessions.set(sessionId, session);
+        saveSessions(updatedSessions);
+        
+        return {
+          ...prev,
+          sessions: updatedSessions,
+        };
+      }
+      return prev;
+    });
+  }, [saveSessions, getSessionMessages]);
 
   // Initialize on mount
   useEffect(() => {
