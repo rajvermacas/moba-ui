@@ -170,7 +170,7 @@ const QueryResults: React.FC<QueryResultsProps> = ({
     <div className="bg-white dark:bg-gray-800 mt-4 border border-gray-300 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
       {/* Header Toolbar */}
       <div className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 py-3">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4">
           {/* Results Info */}
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-primary-500/20 text-primary-300 text-sm font-medium">
