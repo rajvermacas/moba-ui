@@ -220,6 +220,13 @@ export const useChat = ({
 
         // Extract graph data from response (new feature)
         const graphData = choice.graph || null;
+        
+        // Debug logging for graph data
+        console.log('API Response choice:', choice);
+        console.log('Extracted graph data:', graphData);
+        if (graphData) {
+          console.log('Graph data structure:', JSON.stringify(graphData, null, 2));
+        }
 
         // Update the assistant message with the response
         updateMessage(assistantMessageId, {

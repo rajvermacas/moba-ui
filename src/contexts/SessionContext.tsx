@@ -402,21 +402,24 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({ children }) =>
 
   // Update session's last message timestamp and count
   const updateSessionLastMessage = useCallback((sessionId: string) => {
-    const updatedSessions = new Map(state.sessions);
-    const session = updatedSessions.get(sessionId);
-    if (session) {
-      session.lastMessageAt = new Date();
-      const messages = getSessionMessages(sessionId);
-      session.messageCount = messages.length;
-      updatedSessions.set(sessionId, session);
-      saveSessions(updatedSessions);
-      
-      setState(prev => ({
-        ...prev,
-        sessions: updatedSessions,
-      }));
-    }
-  }, [state.sessions, saveSessions, getSessionMessages]);
+    setState(prev => {
+      const updatedSessions = new Map(prev.sessions);
+      const session = updatedSessions.get(sessionId);
+      if (session) {
+        session.lastMessageAt = new Date();
+        const messages = getSessionMessages(sessionId);
+        session.messageCount = messages.length;
+        updatedSessions.set(sessionId, session);
+        saveSessions(updatedSessions);
+        
+        return {
+          ...prev,
+          sessions: updatedSessions,
+        };
+      }
+      return prev;
+    });
+  }, [saveSessions, getSessionMessages]);
 
   // Initialize on mount
   useEffect(() => {

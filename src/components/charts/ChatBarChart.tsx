@@ -21,6 +21,11 @@ interface ChatBarChartProps {
  * Bar chart component for chat graph visualizations
  */
 export const ChatBarChart: React.FC<ChatBarChartProps> = ({ graphData, className }) => {
+  // Debug logging
+  console.log('ChatBarChart received graphData:', graphData);
+  console.log('Data array:', graphData.data);
+  console.log('x_key:', graphData.x_key, 'y_key:', graphData.y_key);
+  
   // Validate data
   const validationError = validateChartData(
     graphData.data,
@@ -40,6 +45,12 @@ export const ChatBarChart: React.FC<ChatBarChartProps> = ({ graphData, className
   const data = graphData.data as BarChartDataPoint[];
   const xKey = graphData.x_key || 'name';
   const yKey = graphData.y_key || 'value';
+  
+  // Debug logging data and keys
+  console.log('Processed data:', data);
+  console.log('Using xKey:', xKey, 'yKey:', yKey);
+  console.log('First data point:', data[0]);
+  console.log('Value at yKey for first item:', data[0]?.[yKey]);
 
   return (
     <BaseChartWrapper
