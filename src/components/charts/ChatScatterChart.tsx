@@ -21,13 +21,6 @@ interface ChatScatterChartProps {
  * Scatter chart component for chat graph visualizations
  */
 export const ChatScatterChart: React.FC<ChatScatterChartProps> = ({ graphData, className }) => {
-  console.log('[ChatScatterChart] Rendering with data:', {
-    title: graphData.title,
-    dataLength: graphData.data?.length,
-    xKey: graphData.x_key,
-    yKey: graphData.y_key
-  });
-
   // Validate data
   const validationError = validateChartData(
     graphData.data,
@@ -35,7 +28,6 @@ export const ChatScatterChart: React.FC<ChatScatterChartProps> = ({ graphData, c
   );
 
   if (validationError) {
-    console.error('[ChatScatterChart] Validation failed:', validationError);
     return (
       <BaseChartWrapper
         title={graphData.title}

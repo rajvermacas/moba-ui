@@ -220,12 +220,6 @@ export const useChat = ({
 
         // Extract graph data from response (new feature)
         const graphData = choice.graph || null;
-        
-        console.log('[useChat] Response received:', {
-          hasQueryResult: !!queryResult,
-          hasGraphData: !!graphData,
-          chartType: graphData?.chart_type
-        });
 
         // Update the assistant message with the response
         updateMessage(assistantMessageId, {

@@ -21,13 +21,6 @@ interface ChatAreaChartProps {
  * Area chart component for chat graph visualizations
  */
 export const ChatAreaChart: React.FC<ChatAreaChartProps> = ({ graphData, className }) => {
-  console.log('[ChatAreaChart] Rendering with data:', {
-    title: graphData.title,
-    dataLength: graphData.data?.length,
-    xKey: graphData.x_key,
-    yKey: graphData.y_key
-  });
-
   // Validate data
   const validationError = validateChartData(
     graphData.data,
@@ -35,7 +28,6 @@ export const ChatAreaChart: React.FC<ChatAreaChartProps> = ({ graphData, classNa
   );
 
   if (validationError) {
-    console.error('[ChatAreaChart] Validation failed:', validationError);
     return (
       <BaseChartWrapper
         title={graphData.title}

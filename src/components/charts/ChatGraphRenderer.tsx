@@ -23,21 +23,13 @@ export const ChatGraphRenderer: React.FC<ChatGraphRendererProps> = ({
   graphData, 
   className 
 }) => {
-  console.log('[ChatGraphRenderer] Rendering with graph data:', {
-    hasData: !!graphData,
-    chartType: graphData?.chart_type,
-    dataLength: graphData?.data?.length
-  });
-
   // Handle null or undefined graph data (backward compatibility)
   if (!graphData) {
-    console.log('[ChatGraphRenderer] No graph data provided, skipping render');
     return null;
   }
 
   // Validate basic structure
   if (!graphData.chart_type || !graphData.data || !Array.isArray(graphData.data)) {
-    console.error('[ChatGraphRenderer] Invalid graph data structure:', graphData);
     return (
       <BaseChartWrapper
         title="Chart Error"
@@ -59,8 +51,6 @@ export const ChatGraphRenderer: React.FC<ChatGraphRendererProps> = ({
 
   // Route to appropriate chart component based on chart_type
   const renderChart = () => {
-    console.log('[ChatGraphRenderer] Rendering chart type:', graphData.chart_type);
-    
     switch (graphData.chart_type) {
       case 'bar':
         return <ChatBarChart graphData={graphData} className={className} />;
@@ -81,7 +71,6 @@ export const ChatGraphRenderer: React.FC<ChatGraphRendererProps> = ({
         return <ChatHeatmap graphData={graphData} className={className} />;
       
       default:
-        console.error('[ChatGraphRenderer] Unsupported chart type:', graphData.chart_type);
         return (
           <BaseChartWrapper
             title="Unsupported Chart Type"

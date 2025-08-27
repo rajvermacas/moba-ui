@@ -12,14 +12,6 @@ interface ChatHeatmapProps {
  * Note: Recharts doesn't have native heatmap support, so this is a custom implementation
  */
 export const ChatHeatmap: React.FC<ChatHeatmapProps> = ({ graphData, className }) => {
-  console.log('[ChatHeatmap] Rendering with data:', {
-    title: graphData.title,
-    dataLength: graphData.data?.length,
-    xKey: graphData.x_key,
-    yKey: graphData.y_key,
-    valueKey: graphData.value_key
-  });
-
   // Validate data
   const validationError = validateChartData(
     graphData.data,
@@ -31,7 +23,6 @@ export const ChatHeatmap: React.FC<ChatHeatmapProps> = ({ graphData, className }
   );
 
   if (validationError) {
-    console.error('[ChatHeatmap] Validation failed:', validationError);
     return (
       <BaseChartWrapper
         title={graphData.title}

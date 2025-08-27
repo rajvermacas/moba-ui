@@ -19,13 +19,6 @@ interface ChatPieChartProps {
  * Pie chart component for chat graph visualizations
  */
 export const ChatPieChart: React.FC<ChatPieChartProps> = ({ graphData, className }) => {
-  console.log('[ChatPieChart] Rendering with data:', {
-    title: graphData.title,
-    dataLength: graphData.data?.length,
-    nameKey: graphData.name_key,
-    valueKey: graphData.value_key
-  });
-
   // Validate data
   const validationError = validateChartData(
     graphData.data,
@@ -33,7 +26,6 @@ export const ChatPieChart: React.FC<ChatPieChartProps> = ({ graphData, className
   );
 
   if (validationError) {
-    console.error('[ChatPieChart] Validation failed:', validationError);
     return (
       <BaseChartWrapper
         title={graphData.title}

@@ -24,17 +24,10 @@ class ChartErrorBoundary extends Component<BaseChartProps, ErrorBoundaryState> {
   }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    console.error('[ChartErrorBoundary] Chart rendering failed:', error);
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('[ChartErrorBoundary] Error details:', {
-      error: error.toString(),
-      componentStack: errorInfo.componentStack,
-      errorBoundary: 'ChartErrorBoundary'
-    });
-    
+  componentDidCatch(error: Error, _errorInfo: React.ErrorInfo) {
     // Call optional error callback
     if (this.props.onError) {
       this.props.onError(error);
@@ -86,8 +79,6 @@ export const BaseChartWrapper: React.FC<BaseChartWrapperProps> = ({
   children,
   onError
 }) => {
-  console.log('[BaseChartWrapper] Rendering chart:', { title, loading, error });
-
   if (loading) {
     return (
       <div className={`flex items-center justify-center p-8 ${className}`}>
@@ -135,12 +126,6 @@ export const BaseChartWrapper: React.FC<BaseChartWrapperProps> = ({
  * Validates chart data before rendering
  */
 export const validateChartData = (data: any[], requiredKeys: string[]): string | null => {
-  console.log('[validateChartData] Validating data:', { 
-    dataLength: data?.length, 
-    requiredKeys,
-    sampleData: data?.[0] 
-  });
-
   if (!data || !Array.isArray(data)) {
     return 'Invalid data format: expected array';
   }
