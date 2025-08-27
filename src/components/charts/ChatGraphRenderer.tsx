@@ -4,6 +4,8 @@ import { BaseChartWrapper } from './BaseChart';
 
 // Lazy load chart components for better performance
 const ChatBarChart = lazy(() => import('./ChatBarChart'));
+// TEST: Import simple chart for debugging
+import { ChatBarChartSimple } from './ChatBarChartSimple';
 const ChatLineChart = lazy(() => import('./ChatLineChart'));
 const ChatPieChart = lazy(() => import('./ChatPieChart'));
 const ChatScatterChart = lazy(() => import('./ChatScatterChart'));
