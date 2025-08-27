@@ -6,6 +6,7 @@ import React from 'react';
 import { User, Bot, Copy, Clock, AlertCircle, Loader2 } from 'lucide-react';
 import { ChatMessage } from '../types/chat.types';
 import QueryResults from './QueryResults';
+import { ChatGraphRenderer } from './charts/ChatGraphRenderer';
 import clsx from 'clsx';
 
 interface MessageProps {
@@ -140,6 +141,13 @@ const Message: React.FC<MessageProps> = ({ message }) => {
                     Query Results:
                   </h4>
                   <QueryResults queryResult={message.queryResult} />
+                </div>
+              )}
+              
+              {/* Show graph visualization if available */}
+              {message.graph && (
+                <div className="mt-4">
+                  <ChatGraphRenderer graphData={message.graph} />
                 </div>
               )}
               

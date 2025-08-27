@@ -10,6 +10,7 @@ export interface ChatMessage {
   isLoading?: boolean;
   error?: string;
   queryResult?: QueryResult;
+  graph?: GraphData | null;
 }
 
 export interface QueryResult {
@@ -19,6 +20,70 @@ export interface QueryResult {
   error?: string;
   row_count?: number;
   execution_time?: number;
+}
+
+/**
+ * Graph visualization data from backend
+ */
+export interface GraphData {
+  chart_type: 'bar' | 'line' | 'pie' | 'scatter' | 'area' | 'heatmap';
+  data: ChartDataPoint[];
+  title: string;
+  x_key?: string;
+  y_key?: string;
+  x_label?: string;
+  y_label?: string;
+  generated_at: number;
+  total_records: number;
+  
+  // Chart-specific properties
+  name_key?: string;      // For pie charts
+  value_key?: string;     // For pie charts  
+  fill?: string;          // For area/scatter charts
+  fillOpacity?: number;   // For area charts
+  stroke?: string;        // For line/area charts
+  value_label?: string;   // For heatmaps
+}
+
+export type ChartDataPoint = 
+  | BarChartDataPoint 
+  | LineChartDataPoint 
+  | PieChartDataPoint 
+  | ScatterChartDataPoint
+  | AreaChartDataPoint 
+  | HeatmapDataPoint;
+
+export interface BarChartDataPoint {
+  name: string;          // Category label
+  value: number;         // Numeric value
+  color?: string;        // Bar color (optional)
+}
+
+export interface LineChartDataPoint {
+  x: string | number;    // X-axis value (date, category, or number)
+  y: number;             // Y-axis numeric value
+}
+
+export interface PieChartDataPoint {
+  name: string;          // Slice label
+  value: number;         // Slice value
+  fill: string;          // Slice color
+}
+
+export interface ScatterChartDataPoint {
+  x: number;             // X-axis numeric value
+  y: number;             // Y-axis numeric value
+}
+
+export interface AreaChartDataPoint {
+  x: string | number;    // X-axis value
+  y: number;             // Y-axis numeric value
+}
+
+export interface HeatmapDataPoint {
+  x: string;             // X-axis category
+  y: string;             // Y-axis category
+  value: number;         // Intensity value
 }
 
 export interface ChatCompletionRequest {
@@ -45,6 +110,7 @@ export interface ChatCompletionResponse {
     };
     finish_reason: string | null;
     query_result?: QueryResult;
+    graph?: GraphData | null;  // NEW: Optional graph data
   }>;
   usage?: {
     prompt_tokens: number;
