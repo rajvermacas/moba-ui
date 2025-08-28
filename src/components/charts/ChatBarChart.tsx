@@ -11,6 +11,8 @@ import {
 import { Bar } from 'react-chartjs-2';
 import { GraphData } from '@/types/chat.types';
 import { BaseChartWrapper, validateChartData } from './BaseChart';
+import { useTheme } from '@/contexts/ThemeContext';
+import { getBarChartOptions } from '@/utils/chartTheme';
 
 // Register Chart.js components
 ChartJS.register(
@@ -31,6 +33,8 @@ interface ChatBarChartProps {
  * Bar chart component for chat graph visualizations using Chart.js
  */
 export const ChatBarChart: React.FC<ChatBarChartProps> = ({ graphData, className }) => {
+  const { isDark } = useTheme();
+  
   // Validate data
   const validationError = validateChartData(
     graphData.data,
@@ -80,10 +84,8 @@ export const ChatBarChart: React.FC<ChatBarChartProps> = ({ graphData, className
     ]
   };
 
-  // Chart.js options
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
+  // Chart.js options with theme support
+  const options = getBarChartOptions(isDark, {
     plugins: {
       legend: {
         display: true,
@@ -105,9 +107,6 @@ export const ChatBarChart: React.FC<ChatBarChartProps> = ({ graphData, className
     },
     scales: {
       x: {
-        grid: {
-          display: false
-        },
         ticks: {
           autoSkip: false,
           maxRotation: 45,
@@ -116,9 +115,6 @@ export const ChatBarChart: React.FC<ChatBarChartProps> = ({ graphData, className
       },
       y: {
         beginAtZero: true,
-        grid: {
-          color: 'rgba(0, 0, 0, 0.1)'
-        },
         ticks: {
           callback: function(value: any) {
             // Format Y-axis labels as currency
@@ -131,7 +127,7 @@ export const ChatBarChart: React.FC<ChatBarChartProps> = ({ graphData, className
         }
       }
     }
-  };
+  });
 
   return (
     <BaseChartWrapper

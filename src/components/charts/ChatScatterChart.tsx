@@ -1,16 +1,20 @@
 import React from 'react';
 import {
-  ScatterChart,
-  Scatter,
-  XAxis,
-  YAxis,
-  CartesianGrid,
+  Chart as ChartJS,
+  LinearScale,
+  PointElement,
+  LineElement,
   Tooltip,
-  ResponsiveContainer,
   Legend
-} from 'recharts';
+} from 'chart.js';
+import { Scatter } from 'react-chartjs-2';
 import { ScatterChartDataPoint, GraphData } from '@/types/chat.types';
-import { BaseChartWrapper, validateChartData, formatNumber, DEFAULT_CHART_MARGIN } from './BaseChart';
+import { BaseChartWrapper, validateChartData, formatNumber } from './BaseChart';
+import { useTheme } from '@/contexts/ThemeContext';
+import { getScatterChartOptions } from '@/utils/chartTheme';
+
+// Register Chart.js components
+ChartJS.register(LinearScale, PointElement, LineElement, Tooltip, Legend);
 
 interface ChatScatterChartProps {
   graphData: GraphData;
@@ -18,9 +22,11 @@ interface ChatScatterChartProps {
 }
 
 /**
- * Scatter chart component for chat graph visualizations
+ * Scatter chart component for chat graph visualizations using Chart.js
  */
 export const ChatScatterChart: React.FC<ChatScatterChartProps> = ({ graphData, className }) => {
+  const { isDark } = useTheme();
+  
   // Validate data
   const validationError = validateChartData(
     graphData.data,
@@ -37,10 +43,78 @@ export const ChatScatterChart: React.FC<ChatScatterChartProps> = ({ graphData, c
     );
   }
 
-  const data = graphData.data as ScatterChartDataPoint[];
+  const rawData = graphData.data as ScatterChartDataPoint[];
   const xKey = graphData.x_key || 'x';
   const yKey = graphData.y_key || 'y';
   const fillColor = graphData.fill || '#dc2626';
+
+  // Transform data for Chart.js scatter format
+  const chartData = {
+    datasets: [
+      {
+        label: graphData.title || 'Data Points',
+        data: rawData.map(item => ({
+          x: typeof item[xKey] === 'number' ? item[xKey] : parseFloat(item[xKey] as string) || 0,
+          y: typeof item[yKey] === 'number' ? item[yKey] : parseFloat(item[yKey] as string) || 0,
+        })),
+        backgroundColor: fillColor + '80', // Add transparency
+        borderColor: fillColor,
+        borderWidth: 1,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+      },
+    ],
+  };
+
+  // Chart.js options with theme support
+  const options = getScatterChartOptions(isDark, {
+    plugins: {
+      legend: {
+        display: true,
+        position: 'top' as const,
+      },
+      tooltip: {
+        callbacks: {
+          label: (context: any) => {
+            const x = context.parsed.x;
+            const y = context.parsed.y;
+            return [
+              `${graphData.x_label || 'X'}: ${formatNumber(x)}`,
+              `${graphData.y_label || 'Y'}: ${formatNumber(y)}`,
+            ];
+          },
+        },
+      },
+    },
+    scales: {
+      x: {
+        type: 'linear' as const,
+        position: 'bottom' as const,
+        title: {
+          display: true,
+          text: graphData.x_label || 'X Axis',
+        },
+        ticks: {
+          callback: function(value: any) {
+            return formatNumber(value);
+          },
+        },
+      },
+      y: {
+        type: 'linear' as const,
+        position: 'left' as const,
+        title: {
+          display: true,
+          text: graphData.y_label || 'Y Axis',
+        },
+        ticks: {
+          callback: function(value: any) {
+            return formatNumber(value);
+          },
+        },
+      },
+    },
+  });
 
   return (
     <BaseChartWrapper
@@ -48,65 +122,9 @@ export const ChatScatterChart: React.FC<ChatScatterChartProps> = ({ graphData, c
       subtitle={`${graphData.total_records} data points`}
       className={className}
     >
-      <ResponsiveContainer width="100%" height={400}>
-        <ScatterChart margin={DEFAULT_CHART_MARGIN}>
-          <CartesianGrid 
-            strokeDasharray="3 3" 
-            stroke="#e5e7eb" 
-            className="dark:stroke-gray-700"
-          />
-          <XAxis 
-            dataKey={xKey}
-            name={graphData.x_label || 'X Axis'}
-            label={{ 
-              value: graphData.x_label || 'X Axis', 
-              position: 'insideBottom', 
-              offset: -10,
-              style: { textAnchor: 'middle' }
-            }}
-            tickFormatter={formatNumber}
-            tick={{ fontSize: 12 }}
-            type="number"
-            domain={['dataMin', 'dataMax']}
-            className="text-gray-600 dark:text-gray-400"
-          />
-          <YAxis 
-            dataKey={yKey}
-            name={graphData.y_label || 'Y Axis'}
-            label={{ 
-              value: graphData.y_label || 'Y Axis', 
-              angle: -90, 
-              position: 'insideLeft',
-              style: { textAnchor: 'middle' }
-            }}
-            tickFormatter={formatNumber}
-            tick={{ fontSize: 12 }}
-            type="number"
-            domain={['dataMin', 'dataMax']}
-            className="text-gray-600 dark:text-gray-400"
-          />
-          <Tooltip 
-            cursor={{ strokeDasharray: '3 3' }}
-            formatter={(value: number) => formatNumber(value)}
-            contentStyle={{
-              backgroundColor: 'rgba(255, 255, 255, 0.95)',
-              border: '1px solid #e5e7eb',
-              borderRadius: '6px',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-            }}
-            labelStyle={{ color: '#374151', fontWeight: 'bold' }}
-          />
-          <Legend 
-            wrapperStyle={{ paddingTop: '20px' }}
-          />
-          <Scatter 
-            name={graphData.title || 'Data Points'}
-            data={data} 
-            fill={fillColor}
-            animationDuration={500}
-          />
-        </ScatterChart>
-      </ResponsiveContainer>
+      <div style={{ position: 'relative', height: '400px', width: '100%' }}>
+        <Scatter data={chartData} options={options} />
+      </div>
     </BaseChartWrapper>
   );
 };

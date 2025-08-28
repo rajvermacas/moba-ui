@@ -8,6 +8,8 @@ import {
 import { Pie } from 'react-chartjs-2';
 import { PieChartDataPoint, GraphData } from '@/types/chat.types';
 import { BaseChartWrapper, validateChartData, formatNumber, DEFAULT_CHART_COLORS } from './BaseChart';
+import { useTheme } from '@/contexts/ThemeContext';
+import { getPieChartOptions, getChartThemeColors } from '@/utils/chartTheme';
 
 // Register Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -21,6 +23,9 @@ interface ChatPieChartProps {
  * Pie chart component for chat graph visualizations
  */
 export const ChatPieChart: React.FC<ChatPieChartProps> = ({ graphData, className }) => {
+  const { isDark } = useTheme();
+  const colors = getChartThemeColors(isDark);
+  
   // Validate data
   const validationError = validateChartData(
     graphData.data,
@@ -58,13 +63,10 @@ export const ChatPieChart: React.FC<ChatPieChartProps> = ({ graphData, className
     ],
   };
 
-  // Chart.js options
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
+  // Chart.js options with theme support
+  const options = getPieChartOptions(isDark, {
     plugins: {
       legend: {
-        position: 'bottom' as const,
         labels: {
           generateLabels: (chart: any) => {
             const data = chart.data;
@@ -99,7 +101,7 @@ export const ChatPieChart: React.FC<ChatPieChartProps> = ({ graphData, className
         },
       },
     },
-  };
+  });
 
   return (
     <BaseChartWrapper
