@@ -7,6 +7,7 @@ import { User, Bot, Copy, Clock, AlertCircle, Loader2 } from 'lucide-react';
 import { ChatMessage } from '../types/chat.types';
 import QueryResults from './QueryResults';
 import { ChatGraphRenderer } from './charts/ChatGraphRenderer';
+import { useColorScheme } from '@/contexts/ColorSchemeContext';
 import clsx from 'clsx';
 
 interface MessageProps {
@@ -15,6 +16,8 @@ interface MessageProps {
 }
 
 const Message: React.FC<MessageProps> = ({ message }) => {
+  const { colorScheme } = useColorScheme();
+  
   const formatTimestamp = (timestamp: Date): string => {
     return timestamp.toLocaleTimeString([], { 
       hour: '2-digit', 
@@ -147,7 +150,10 @@ const Message: React.FC<MessageProps> = ({ message }) => {
               {/* Show graph visualization if available */}
               {message.graph && (
                 <div className="mt-4">
-                  <ChatGraphRenderer graphData={message.graph} />
+                  <ChatGraphRenderer 
+                    graphData={message.graph} 
+                    colorScheme={colorScheme} 
+                  />
                 </div>
               )}
               

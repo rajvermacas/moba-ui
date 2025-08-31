@@ -1,17 +1,19 @@
 import React from 'react';
 import { HeatmapDataPoint, GraphData } from '@/types/chat.types';
 import { BaseChartWrapper, validateChartData } from './BaseChart';
+import { ChartColorScheme } from '@/utils/chartTheme';
 
 interface ChatHeatmapProps {
   graphData: GraphData;
   className?: string;
+  colorScheme?: ChartColorScheme;
 }
 
 /**
  * Custom heatmap component for chat graph visualizations
  * Note: Recharts doesn't have native heatmap support, so this is a custom implementation
  */
-export const ChatHeatmap: React.FC<ChatHeatmapProps> = ({ graphData, className }) => {
+export const ChatHeatmap: React.FC<ChatHeatmapProps> = ({ graphData, className, colorScheme = 'professional-mixed' }) => {
   // Validate data
   const validationError = validateChartData(
     graphData.data,
@@ -46,12 +48,32 @@ export const ChatHeatmap: React.FC<ChatHeatmapProps> = ({ graphData, className }
   const minValue = Math.min(...values);
   const maxValue = Math.max(...values);
 
-  // Color interpolation function
+  // Color interpolation function based on color scheme
   const getColor = (value: number): string => {
     const normalized = (value - minValue) / (maxValue - minValue);
-    const intensity = Math.round(normalized * 255);
-    // Red gradient: from light to dark
-    return `rgb(255, ${255 - intensity}, ${255 - intensity})`;
+    
+    if (colorScheme === 'black-white-gray-red') {
+      // Interpolate from white to red for this scheme
+      const intensity = Math.round(normalized * 255);
+      return `rgb(255, ${255 - intensity}, ${255 - intensity})`;
+    } else {
+      // For red-amber-green scheme, create gradient from green (low) to amber (mid) to red (high)
+      if (normalized <= 0.5) {
+        // Green to Amber transition
+        const localNormalized = normalized * 2; // 0-1 range for first half
+        const red = Math.round(22 + (245 - 22) * localNormalized); // 22 (green) to 245 (amber)
+        const green = Math.round(163 + (158 - 163) * localNormalized); // 163 to 158
+        const blue = Math.round(74 + (11 - 74) * localNormalized); // 74 to 11
+        return `rgb(${red}, ${green}, ${blue})`;
+      } else {
+        // Amber to Red transition
+        const localNormalized = (normalized - 0.5) * 2; // 0-1 range for second half
+        const red = Math.round(245 + (220 - 245) * localNormalized); // 245 (amber) to 220 (red)
+        const green = Math.round(158 + (38 - 158) * localNormalized); // 158 to 38
+        const blue = Math.round(11 + (38 - 11) * localNormalized); // 11 to 38
+        return `rgb(${red}, ${green}, ${blue})`;
+      }
+    }
   };
 
   // Create a map for quick lookup

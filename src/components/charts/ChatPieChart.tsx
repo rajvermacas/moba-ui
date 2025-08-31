@@ -7,9 +7,9 @@ import {
 } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
 import { PieChartDataPoint, GraphData } from '@/types/chat.types';
-import { BaseChartWrapper, validateChartData, formatNumber, DEFAULT_CHART_COLORS } from './BaseChart';
+import { BaseChartWrapper, validateChartData, formatNumber } from './BaseChart';
 import { useTheme } from '@/contexts/ThemeContext';
-import { getPieChartOptions, getChartThemeColors } from '@/utils/chartTheme';
+import { getPieChartOptions, getChartDataColors, ChartColorScheme } from '@/utils/chartTheme';
 
 // Register Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -17,14 +17,15 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 interface ChatPieChartProps {
   graphData: GraphData;
   className?: string;
+  colorScheme?: ChartColorScheme;
 }
 
 /**
  * Pie chart component for chat graph visualizations
  */
-export const ChatPieChart: React.FC<ChatPieChartProps> = ({ graphData, className }) => {
+export const ChatPieChart: React.FC<ChatPieChartProps> = ({ graphData, className, colorScheme = 'professional-mixed' }) => {
   const { isDark } = useTheme();
-  const colors = getChartThemeColors(isDark);
+  const { primary: chartColors } = getChartDataColors(colorScheme);
   
   // Validate data
   const validationError = validateChartData(
@@ -48,15 +49,15 @@ export const ChatPieChart: React.FC<ChatPieChartProps> = ({ graphData, className
 
   // Prepare data for Chart.js
   const chartData = {
-    labels: rawData.map(item => item[nameKey] as string),
+    labels: rawData.map(item => item[nameKey as keyof PieChartDataPoint] as string),
     datasets: [
       {
-        data: rawData.map(item => item[valueKey] as number),
-        backgroundColor: rawData.map((item, index) => 
-          item.fill || DEFAULT_CHART_COLORS[index % DEFAULT_CHART_COLORS.length]
+        data: rawData.map(item => item[valueKey as keyof PieChartDataPoint] as number),
+        backgroundColor: rawData.map((_, index) => 
+          chartColors[index % chartColors.length]
         ),
-        borderColor: rawData.map((item, index) => 
-          item.fill || DEFAULT_CHART_COLORS[index % DEFAULT_CHART_COLORS.length]
+        borderColor: rawData.map((_, index) => 
+          chartColors[index % chartColors.length]
         ),
         borderWidth: 1,
       },

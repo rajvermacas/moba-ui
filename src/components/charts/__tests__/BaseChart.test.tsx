@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { BaseChartWrapper, validateChartData, formatNumber, DEFAULT_CHART_COLORS } from '../BaseChart';
+import { BaseChartWrapper, validateChartData, formatNumber } from '../BaseChart';
+import { getChartDataColors } from '@/utils/chartTheme';
 
 describe('BaseChart', () => {
   describe('BaseChartWrapper', () => {
@@ -141,19 +142,27 @@ describe('BaseChart', () => {
     });
   });
 
-  describe('DEFAULT_CHART_COLORS', () => {
-    it('contains 10 color values', () => {
-      expect(DEFAULT_CHART_COLORS).toHaveLength(10);
+  describe('Chart Color Schemes', () => {
+    it('red-amber-green scheme contains correct colors', () => {
+      const { primary } = getChartDataColors('professional-mixed');
+      expect(primary[0]).toBe('#dc2626'); // red
+      expect(primary[1]).toBe('#f59e0b'); // amber
+      expect(primary[2]).toBe('#16a34a'); // green
+    });
+
+    it('black-white-gray-red scheme contains correct colors', () => {
+      const { primary } = getChartDataColors('black-white-gray-red');
+      expect(primary[0]).toBe('#000000'); // black
+      expect(primary[1]).toBe('#ffffff'); // white
+      expect(primary[2]).toBe('#6b7280'); // gray
+      expect(primary[3]).toBe('#dc2626'); // red
     });
 
     it('contains valid hex color codes', () => {
-      DEFAULT_CHART_COLORS.forEach(color => {
+      const { primary } = getChartDataColors('professional-mixed');
+      primary.forEach((color: string) => {
         expect(color).toMatch(/^#[0-9a-fA-F]{6}$/);
       });
-    });
-
-    it('starts with red-600 color', () => {
-      expect(DEFAULT_CHART_COLORS[0]).toBe('#dc2626');
     });
   });
 

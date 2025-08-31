@@ -13,7 +13,7 @@ import { Line } from 'react-chartjs-2';
 import { LineChartDataPoint, GraphData } from '@/types/chat.types';
 import { BaseChartWrapper, validateChartData, formatNumber } from './BaseChart';
 import { useTheme } from '@/contexts/ThemeContext';
-import { getLineChartOptions } from '@/utils/chartTheme';
+import { getLineChartOptions, getChartDataColors, ChartColorScheme } from '@/utils/chartTheme';
 
 // Register Chart.js components
 ChartJS.register(
@@ -29,13 +29,15 @@ ChartJS.register(
 interface ChatLineChartProps {
   graphData: GraphData;
   className?: string;
+  colorScheme?: ChartColorScheme;
 }
 
 /**
  * Line chart component for chat graph visualizations using Chart.js
  */
-export const ChatLineChart: React.FC<ChatLineChartProps> = ({ graphData, className }) => {
+export const ChatLineChart: React.FC<ChatLineChartProps> = ({ graphData, className, colorScheme = 'professional-mixed' }) => {
   const { isDark } = useTheme();
+  const { primary: chartColors } = getChartDataColors(colorScheme);
   
   // Validate data
   const validationError = validateChartData(
@@ -56,16 +58,16 @@ export const ChatLineChart: React.FC<ChatLineChartProps> = ({ graphData, classNa
   const rawData = graphData.data as LineChartDataPoint[];
   const xKey = graphData.x_key || 'x';
   const yKey = graphData.y_key || 'y';
-  const strokeColor = graphData.stroke || '#dc2626';
+  const strokeColor = chartColors[0]; // Always use first color from scheme
 
   // Prepare data for Chart.js
   const chartData = {
-    labels: rawData.map(item => String(item[xKey])),
+    labels: rawData.map(item => String(item[xKey as keyof LineChartDataPoint])),
     datasets: [
       {
         label: graphData.y_label || 'Value',
         data: rawData.map(item => {
-          const value = item[yKey];
+          const value = item[yKey as keyof LineChartDataPoint];
           return typeof value === 'number' ? value : parseFloat(value as string) || 0;
         }),
         borderColor: strokeColor,
@@ -75,7 +77,7 @@ export const ChatLineChart: React.FC<ChatLineChartProps> = ({ graphData, classNa
         pointRadius: 4,
         pointHoverRadius: 6,
         pointBackgroundColor: strokeColor,
-        pointBorderColor: '#fff',
+        pointBorderColor: isDark ? '#1f2937' : '#ffffff',
         pointBorderWidth: 2,
       },
     ],

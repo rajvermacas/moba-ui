@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ChatGraphRenderer } from './ChatGraphRenderer';
 import { GraphData } from '@/types/chat.types';
+import { ChartColorScheme } from '@/utils/chartTheme';
 
 /**
  * Test panel for validating all chart types with sample data
@@ -12,11 +13,11 @@ export const ChartTestPanel: React.FC = () => {
     bar: {
       chart_type: 'bar',
       data: [
-        { name: 'Electronics', value: 25000, color: '#dc2626' },
-        { name: 'Clothing', value: 18000, color: '#ef4444' },
-        { name: 'Books', value: 12000, color: '#f87171' },
-        { name: 'Home & Garden', value: 8500, color: '#fca5a5' },
-        { name: 'Sports', value: 6200, color: '#fecaca' }
+        { name: 'Electronics', value: 25000 },
+        { name: 'Clothing', value: 18000 },
+        { name: 'Books', value: 12000 },
+        { name: 'Home & Garden', value: 8500 },
+        { name: 'Sports', value: 6200 }
       ],
       title: 'Sales by Product Category',
       x_key: 'name',
@@ -41,16 +42,15 @@ export const ChartTestPanel: React.FC = () => {
       y_key: 'y',
       x_label: 'Month',
       y_label: 'Revenue ($)',
-      stroke: '#dc2626',
       generated_at: Date.now(),
       total_records: 6
     },
     pie: {
       chart_type: 'pie',
       data: [
-        { name: 'Premium', value: 245, fill: '#dc2626' },
-        { name: 'Standard', value: 315, fill: '#ef4444' },
-        { name: 'Basic', value: 140, fill: '#f87171' }
+        { name: 'Premium', value: 245 },
+        { name: 'Standard', value: 315 },
+        { name: 'Basic', value: 140 }
       ],
       title: 'Customer Distribution by Type',
       name_key: 'name',
@@ -77,7 +77,6 @@ export const ChartTestPanel: React.FC = () => {
       y_key: 'y',
       x_label: 'Age',
       y_label: 'Lifetime Value ($)',
-      fill: '#dc2626',
       generated_at: Date.now(),
       total_records: 10
     },
@@ -94,9 +93,7 @@ export const ChartTestPanel: React.FC = () => {
       y_key: 'y',
       x_label: 'Quarter',
       y_label: 'New Signups',
-      fill: '#dc2626',
       fillOpacity: 0.3,
-      stroke: '#dc2626',
       generated_at: Date.now(),
       total_records: 4
     },
@@ -133,6 +130,7 @@ export const ChartTestPanel: React.FC = () => {
 
   const [selectedChart, setSelectedChart] = useState<string>('bar');
   const [showNullTest, setShowNullTest] = useState(false);
+  const [colorScheme, setColorScheme] = useState<ChartColorScheme>('black-white-gray-red');
 
   return (
     <div className="p-6 bg-gray-50 dark:bg-gray-900 min-h-screen">
@@ -140,6 +138,35 @@ export const ChartTestPanel: React.FC = () => {
         <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6">
           Chart Component Test Panel
         </h1>
+
+        {/* Color Scheme Selector */}
+        <div className="mb-4">
+          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Color Scheme
+          </h3>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setColorScheme('professional-mixed')}
+              className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                colorScheme === 'professional-mixed'
+                  ? 'bg-green-600 text-white'
+                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+              }`}
+            >
+              Red, Amber, Green
+            </button>
+            <button
+              onClick={() => setColorScheme('black-white-gray-red')}
+              className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                colorScheme === 'black-white-gray-red'
+                  ? 'bg-gray-600 text-white'
+                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+              }`}
+            >
+              Black, White, Gray, Red
+            </button>
+          </div>
+        </div>
         
         {/* Chart Type Selector */}
         <div className="mb-6 flex flex-wrap gap-2">
@@ -181,7 +208,7 @@ export const ChartTestPanel: React.FC = () => {
               </p>
             </div>
           ) : (
-            <ChatGraphRenderer graphData={sampleCharts[selectedChart]} />
+            <ChatGraphRenderer graphData={sampleCharts[selectedChart]} colorScheme={colorScheme} />
           )}
         </div>
 

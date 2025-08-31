@@ -11,7 +11,7 @@ import { Scatter } from 'react-chartjs-2';
 import { ScatterChartDataPoint, GraphData } from '@/types/chat.types';
 import { BaseChartWrapper, validateChartData, formatNumber } from './BaseChart';
 import { useTheme } from '@/contexts/ThemeContext';
-import { getScatterChartOptions } from '@/utils/chartTheme';
+import { getScatterChartOptions, getChartDataColors, ChartColorScheme } from '@/utils/chartTheme';
 
 // Register Chart.js components
 ChartJS.register(LinearScale, PointElement, LineElement, Tooltip, Legend);
@@ -19,13 +19,15 @@ ChartJS.register(LinearScale, PointElement, LineElement, Tooltip, Legend);
 interface ChatScatterChartProps {
   graphData: GraphData;
   className?: string;
+  colorScheme?: ChartColorScheme;
 }
 
 /**
  * Scatter chart component for chat graph visualizations using Chart.js
  */
-export const ChatScatterChart: React.FC<ChatScatterChartProps> = ({ graphData, className }) => {
+export const ChatScatterChart: React.FC<ChatScatterChartProps> = ({ graphData, className, colorScheme = 'professional-mixed' }) => {
   const { isDark } = useTheme();
+  const { primary: chartColors } = getChartDataColors(colorScheme);
   
   // Validate data
   const validationError = validateChartData(
@@ -46,7 +48,7 @@ export const ChatScatterChart: React.FC<ChatScatterChartProps> = ({ graphData, c
   const rawData = graphData.data as ScatterChartDataPoint[];
   const xKey = graphData.x_key || 'x';
   const yKey = graphData.y_key || 'y';
-  const fillColor = graphData.fill || '#dc2626';
+  const fillColor = chartColors[0]; // Always use first color from scheme
 
   // Transform data for Chart.js scatter format
   const chartData = {
@@ -54,8 +56,12 @@ export const ChatScatterChart: React.FC<ChatScatterChartProps> = ({ graphData, c
       {
         label: graphData.title || 'Data Points',
         data: rawData.map(item => ({
-          x: typeof item[xKey] === 'number' ? item[xKey] : parseFloat(item[xKey] as string) || 0,
-          y: typeof item[yKey] === 'number' ? item[yKey] : parseFloat(item[yKey] as string) || 0,
+          x: typeof item[xKey as keyof ScatterChartDataPoint] === 'number' 
+            ? item[xKey as keyof ScatterChartDataPoint] as number
+            : parseFloat(item[xKey as keyof ScatterChartDataPoint] as string) || 0,
+          y: typeof item[yKey as keyof ScatterChartDataPoint] === 'number' 
+            ? item[yKey as keyof ScatterChartDataPoint] as number
+            : parseFloat(item[yKey as keyof ScatterChartDataPoint] as string) || 0,
         })),
         backgroundColor: fillColor + '80', // Add transparency
         borderColor: fillColor,

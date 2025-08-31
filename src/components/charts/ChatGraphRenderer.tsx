@@ -1,11 +1,10 @@
 import React, { Suspense, lazy } from 'react';
 import { GraphData } from '@/types/chat.types';
 import { BaseChartWrapper } from './BaseChart';
+import { ChartColorScheme } from '@/utils/chartTheme';
 
 // Lazy load chart components for better performance
 const ChatBarChart = lazy(() => import('./ChatBarChart'));
-// TEST: Import simple chart for debugging
-import { ChatBarChartSimple } from './ChatBarChartSimple';
 const ChatLineChart = lazy(() => import('./ChatLineChart'));
 const ChatPieChart = lazy(() => import('./ChatPieChart'));
 const ChatScatterChart = lazy(() => import('./ChatScatterChart'));
@@ -15,6 +14,7 @@ const ChatHeatmap = lazy(() => import('./ChatHeatmap'));
 interface ChatGraphRendererProps {
   graphData: GraphData | null | undefined;
   className?: string;
+  colorScheme?: ChartColorScheme;
 }
 
 /**
@@ -23,7 +23,8 @@ interface ChatGraphRendererProps {
  */
 export const ChatGraphRenderer: React.FC<ChatGraphRendererProps> = ({ 
   graphData, 
-  className 
+  className,
+  colorScheme = 'professional-mixed'
 }) => {
   // Handle null or undefined graph data (backward compatibility)
   if (!graphData) {
@@ -55,22 +56,22 @@ export const ChatGraphRenderer: React.FC<ChatGraphRendererProps> = ({
   const renderChart = () => {
     switch (graphData.chart_type) {
       case 'bar':
-        return <ChatBarChart graphData={graphData} className={className} />;
+        return <ChatBarChart graphData={graphData} className={className} colorScheme={colorScheme} />;
       
       case 'line':
-        return <ChatLineChart graphData={graphData} className={className} />;
+        return <ChatLineChart graphData={graphData} className={className} colorScheme={colorScheme} />;
       
       case 'pie':
-        return <ChatPieChart graphData={graphData} className={className} />;
+        return <ChatPieChart graphData={graphData} className={className} colorScheme={colorScheme} />;
       
       case 'scatter':
-        return <ChatScatterChart graphData={graphData} className={className} />;
+        return <ChatScatterChart graphData={graphData} className={className} colorScheme={colorScheme} />;
       
       case 'area':
-        return <ChatAreaChart graphData={graphData} className={className} />;
+        return <ChatAreaChart graphData={graphData} className={className} colorScheme={colorScheme} />;
       
       case 'heatmap':
-        return <ChatHeatmap graphData={graphData} className={className} />;
+        return <ChatHeatmap graphData={graphData} className={className} colorScheme={colorScheme} />;
       
       default:
         return (

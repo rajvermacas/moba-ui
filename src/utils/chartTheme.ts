@@ -1,7 +1,66 @@
 /**
  * Chart theme utilities for Chart.js components
  * Provides consistent theming across all chart types
+ * 
+ * IMPORTANT: All charts strictly enforce predefined color schemes.
+ * Individual color properties (color, fill, stroke) are IGNORED.
+ * Only the two specified color schemes are supported:
+ * 1. professional-mixed: Professional Red, Amber, Green, Black, Gray (various shades)
+ * 2. black-white-gray-red: Black, White, Gray, Red
  */
+
+/**
+ * Chart color schemes - predefined palettes for data visualization
+ */
+export type ChartColorScheme = 'professional-mixed' | 'black-white-gray-red';
+
+export interface ChartDataColors {
+  primary: string[];
+  scheme: ChartColorScheme;
+}
+
+/**
+ * Predefined color schemes for chart data
+ */
+export const CHART_COLOR_SCHEMES: Record<ChartColorScheme, string[]> = {
+  'professional-mixed': [
+    '#ef4444', // soft red (red-500)
+    '#fbbf24', // soft amber (amber-400)
+    '#34d399', // soft green (emerald-400)
+    '#1f2937', // black-ish (gray-800)
+    '#9ca3af', // soft gray (gray-400)
+    '#f87171', // lighter red (red-400)
+    '#fcd34d', // lighter amber (amber-300)
+    '#6ee7b7', // lighter green (emerald-300)
+    '#4b5563', // dark gray (gray-600)
+    '#d1d5db', // light gray (gray-300)
+    '#fca5a5', // very soft red (red-300)
+    '#fde68a', // very soft amber (amber-200)
+    '#a7f3d0', // very soft green (emerald-200)
+    '#374151', // medium-dark gray (gray-700)
+    '#e5e7eb', // very light gray (gray-200)
+  ],
+  'black-white-gray-red': [
+    '#000000', // black
+    '#ffffff', // white  
+    '#6b7280', // gray-500
+    '#dc2626', // red-600
+    '#1f2937', // gray-800 (backup)
+    '#f3f4f6', // gray-100 (backup)
+    '#9ca3af', // gray-400 (backup)
+    '#ef4444', // red-500 (backup)
+  ]
+};
+
+/**
+ * Get chart data colors based on scheme
+ */
+export const getChartDataColors = (scheme: ChartColorScheme = 'black-white-gray-red'): ChartDataColors => {
+  return {
+    primary: CHART_COLOR_SCHEMES[scheme],
+    scheme
+  };
+};
 
 export interface ChartThemeColors {
   text: string;

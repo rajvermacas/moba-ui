@@ -14,7 +14,7 @@ import { Line } from 'react-chartjs-2';
 import { AreaChartDataPoint, GraphData } from '@/types/chat.types';
 import { BaseChartWrapper, validateChartData, formatNumber } from './BaseChart';
 import { useTheme } from '@/contexts/ThemeContext';
-import { getLineChartOptions } from '@/utils/chartTheme';
+import { getLineChartOptions, getChartDataColors, ChartColorScheme } from '@/utils/chartTheme';
 
 // Register Chart.js components (including Filler for area charts)
 ChartJS.register(
@@ -31,14 +31,16 @@ ChartJS.register(
 interface ChatAreaChartProps {
   graphData: GraphData;
   className?: string;
+  colorScheme?: ChartColorScheme;
 }
 
 /**
  * Area chart component for chat graph visualizations using Chart.js
  * Implemented as a Line chart with fill
  */
-export const ChatAreaChart: React.FC<ChatAreaChartProps> = ({ graphData, className }) => {
+export const ChatAreaChart: React.FC<ChatAreaChartProps> = ({ graphData, className, colorScheme = 'professional-mixed' }) => {
   const { isDark } = useTheme();
+  const { primary: chartColors } = getChartDataColors(colorScheme);
   
   // Validate data
   const validationError = validateChartData(
@@ -59,16 +61,16 @@ export const ChatAreaChart: React.FC<ChatAreaChartProps> = ({ graphData, classNa
   const rawData = graphData.data as AreaChartDataPoint[];
   const xKey = graphData.x_key || 'x';
   const yKey = graphData.y_key || 'y';
-  const fillColor = graphData.fill || '#dc2626';
+  const fillColor = chartColors[0]; // Always use first color from scheme
 
   // Prepare data for Chart.js (Line chart with fill for area effect)
   const chartData = {
-    labels: rawData.map(item => String(item[xKey])),
+    labels: rawData.map(item => String(item[xKey as keyof AreaChartDataPoint])),
     datasets: [
       {
         label: graphData.y_label || 'Value',
         data: rawData.map(item => {
-          const value = item[yKey];
+          const value = item[yKey as keyof AreaChartDataPoint];
           return typeof value === 'number' ? value : parseFloat(value as string) || 0;
         }),
         fill: true, // This makes it an area chart

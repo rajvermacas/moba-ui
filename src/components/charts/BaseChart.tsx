@@ -154,20 +154,11 @@ export const validateChartData = (data: any[], requiredKeys: string[]): string |
 };
 
 /**
- * Default color palette for charts
+ * Chart color palettes - use getChartDataColors from chartTheme.ts for consistent colors
+ * All charts now strictly follow predefined color schemes:
+ * - 'professional-mixed': Red, Amber, Green palette
+ * - 'black-white-gray-red': Black, White, Gray, Red palette
  */
-export const DEFAULT_CHART_COLORS = [
-  '#dc2626', // red-600
-  '#ef4444', // red-500
-  '#f87171', // red-400
-  '#fca5a5', // red-300
-  '#fecaca', // red-200
-  '#991b1b', // red-800
-  '#7f1d1d', // red-900
-  '#450a0a', // red-950
-  '#fef2f2', // red-50
-  '#fee2e2', // red-100
-];
 
 /**
  * Formats large numbers for display

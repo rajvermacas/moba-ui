@@ -10,9 +10,9 @@ import {
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import { GraphData } from '@/types/chat.types';
-import { BaseChartWrapper, validateChartData } from './BaseChart';
+import { BaseChartWrapper, validateChartData, formatNumber } from './BaseChart';
 import { useTheme } from '@/contexts/ThemeContext';
-import { getBarChartOptions } from '@/utils/chartTheme';
+import { getBarChartOptions, getChartDataColors, ChartColorScheme } from '@/utils/chartTheme';
 
 // Register Chart.js components
 ChartJS.register(
@@ -27,13 +27,15 @@ ChartJS.register(
 interface ChatBarChartProps {
   graphData: GraphData;
   className?: string;
+  colorScheme?: ChartColorScheme;
 }
 
 /**
  * Bar chart component for chat graph visualizations using Chart.js
  */
-export const ChatBarChart: React.FC<ChatBarChartProps> = ({ graphData, className }) => {
+export const ChatBarChart: React.FC<ChatBarChartProps> = ({ graphData, className, colorScheme = 'professional-mixed' }) => {
   const { isDark } = useTheme();
+  const { primary: chartColors } = getChartDataColors(colorScheme);
   
   // Validate data
   const validationError = validateChartData(
@@ -64,9 +66,9 @@ export const ChatBarChart: React.FC<ChatBarChartProps> = ({ graphData, className
     return typeof val === 'number' ? val : parseFloat(val) || 0;
   });
 
-  // Extract colors if provided
-  const backgroundColors = graphData.data.map((item: any) => 
-    item.color || '#dc2626'
+  // Apply strict color scheme (ignore any individual colors)
+  const backgroundColors = graphData.data.map((_: any, index: number) => 
+    chartColors[index % chartColors.length]
   );
 
   // Chart.js data configuration
@@ -96,11 +98,7 @@ export const ChatBarChart: React.FC<ChatBarChartProps> = ({ graphData, className
           label: (context: any) => {
             const label = context.dataset.label || '';
             const value = context.parsed.y;
-            // Format as currency if it looks like a price
-            if (value > 0) {
-              return `${label}: $${value.toFixed(2)}`;
-            }
-            return `${label}: ${value}`;
+            return `${label}: ${formatNumber(value)}`;
           }
         }
       }
@@ -117,8 +115,7 @@ export const ChatBarChart: React.FC<ChatBarChartProps> = ({ graphData, className
         beginAtZero: true,
         ticks: {
           callback: function(value: any) {
-            // Format Y-axis labels as currency
-            return '$' + value.toLocaleString();
+            return formatNumber(value);
           }
         },
         title: {
