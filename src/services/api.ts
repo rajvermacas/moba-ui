@@ -26,7 +26,7 @@ class ApiService {
     
     this.client = axios.create({
       baseURL: this.baseURL,
-      timeout: 120000, // 120 second timeout for complex queries
+      timeout: 1800000, // 30 minute timeout for complex queries
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
