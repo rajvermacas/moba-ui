@@ -99,28 +99,6 @@ const MessageList: React.FC<MessageListProps> = ({
           />
         ))}
         
-        {/* Typing indicator */}
-        {isTyping && (
-          <div className="flex items-start gap-3 mb-6 px-4 animate-fade-in">
-            {/* Bot Avatar */}
-            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-gray-600 to-gray-700 flex items-center justify-center flex-shrink-0">
-              <Bot className="h-4 w-4 text-white" />
-            </div>
-
-            {/* Typing Content */}
-            <div className="message-bubble-assistant max-w-xs">
-              <div className="flex items-center gap-2">
-                <div className="typing-indicator text-gray-500">
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </div>
-                <span className="text-sm text-gray-600">Assistant is typing...</span>
-              </div>
-            </div>
-          </div>
-        )}
-        
         {/* Scroll anchor */}
         <div ref={messagesEndRef} />
       </div>
