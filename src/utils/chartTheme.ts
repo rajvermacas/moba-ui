@@ -24,21 +24,21 @@ export interface ChartDataColors {
  */
 export const CHART_COLOR_SCHEMES: Record<ChartColorScheme, string[]> = {
   'professional-mixed': [
-    '#ef4444', // soft red (red-500)
-    '#fbbf24', // soft amber (amber-400)
-    '#34d399', // soft green (emerald-400)
-    '#1f2937', // black-ish (gray-800)
-    '#9ca3af', // soft gray (gray-400)
-    '#f87171', // lighter red (red-400)
-    '#fcd34d', // lighter amber (amber-300)
-    '#6ee7b7', // lighter green (emerald-300)
-    '#4b5563', // dark gray (gray-600)
+    '#dc2626', // professional red (red-600)
+    '#d97706', // professional amber (amber-600)
+    '#059669', // professional green (emerald-600)
+    '#1f2937', // near-black (gray-800)
+    '#6b7280', // medium gray (gray-500)
+    '#b91c1c', // darker red (red-700)
+    '#b45309', // darker amber (amber-700)
+    '#047857', // darker green (emerald-700)
+    '#374151', // dark gray (gray-700)
+    '#9ca3af', // lighter gray (gray-400)
+    '#991b1b', // deep red (red-800)
+    '#92400e', // deep amber (amber-800)
+    '#065f46', // deep green (emerald-800)
+    '#111827', // almost black (gray-900)
     '#d1d5db', // light gray (gray-300)
-    '#fca5a5', // very soft red (red-300)
-    '#fde68a', // very soft amber (amber-200)
-    '#a7f3d0', // very soft green (emerald-200)
-    '#374151', // medium-dark gray (gray-700)
-    '#e5e7eb', // very light gray (gray-200)
   ],
   'black-white-gray-red': [
     '#000000', // black
