@@ -45,14 +45,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className = '' }) => {
     isMonitoring
   } = useConnectionStatus({
     checkInterval: 30000, // 30 seconds
-    autoStart: false
+    autoStart: true  // Enable automatic initial check on mount
   });
-
-  // Check status once on component mount (page load/reload)
-  useEffect(() => {
-    checkStatus();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run once on mount
 
   const handleSendMessage = async (content: string) => {
     await sendMessage(content);

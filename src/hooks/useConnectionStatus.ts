@@ -32,6 +32,7 @@ export const useConnectionStatus = ({
 
   const [isMonitoring, setIsMonitoring] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const hasInitialized = useRef(false);
 
   const checkStatus = useCallback(async () => {
     const now = new Date();
@@ -118,8 +119,9 @@ export const useConnectionStatus = ({
   // Auto-start monitoring if enabled
   useEffect(() => {
     if (autoStart) {
-      // Check if not already monitoring
-      if (!intervalRef.current) {
+      // Prevent double initialization in StrictMode
+      if (!hasInitialized.current) {
+        hasInitialized.current = true;
         setIsMonitoring(true);
         
         // Initial check
@@ -132,6 +134,7 @@ export const useConnectionStatus = ({
 
     // Cleanup on unmount
     return () => {
+      // Don't reset hasInitialized here to prevent re-initialization in StrictMode
       setIsMonitoring(false);
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
