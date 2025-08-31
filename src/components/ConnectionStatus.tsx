@@ -13,7 +13,7 @@ import {
   Wifi,
   Database,
 } from 'lucide-react';
-import { ConnectionStatus as ConnectionStatusType } from '../types/chat.types';
+import { ConnectionStatus as ConnectionStatusType, McpServerStatus } from '../types/chat.types';
 import clsx from 'clsx';
 
 interface ConnectionStatusProps {
@@ -145,17 +145,33 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
                 {getStatusIcon(status.fastapi_status)}
               </div>
 
-              {/* MCP Server */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Database className={clsx('h-4 w-4', getStatusColorClasses(status.mcp_status).split(' ')[0])} />
-                  <div>
-                    <div className="text-sm font-medium text-gray-800 dark:text-gray-200">MCP Server</div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400">{getStatusText(status.mcp_status)}</div>
+              {/* Individual MCP Servers */}
+              {status.mcp_servers && status.mcp_servers.length > 0 ? (
+                status.mcp_servers.map((server: McpServerStatus, index: number) => (
+                  <div key={`mcp-server-${index}-${server.name}`} className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Database className={clsx('h-4 w-4', getStatusColorClasses(server.status).split(' ')[0])} />
+                      <div>
+                        <div className="text-sm font-medium text-gray-800 dark:text-gray-200">{server.name}</div>
+                        <div className="text-xs text-gray-600 dark:text-gray-400">{getStatusText(server.status)}</div>
+                      </div>
+                    </div>
+                    {getStatusIcon(server.status)}
                   </div>
+                ))
+              ) : (
+                // Fallback to single MCP status if no individual servers
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Database className={clsx('h-4 w-4', getStatusColorClasses(status.mcp_status).split(' ')[0])} />
+                    <div>
+                      <div className="text-sm font-medium text-gray-800 dark:text-gray-200">MCP Server</div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400">{getStatusText(status.mcp_status)}</div>
+                    </div>
+                  </div>
+                  {getStatusIcon(status.mcp_status)}
                 </div>
-                {getStatusIcon(status.mcp_status)}
-              </div>
+              )}
             </div>
 
             {/* Error Details */}

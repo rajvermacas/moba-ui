@@ -134,12 +134,18 @@ export interface HealthResponse {
   mcp_server_status?: string;
 }
 
+export interface McpServerStatus {
+  name: string;
+  status: 'connected' | 'disconnected' | 'error';
+}
+
 export interface ConnectionStatus {
   isConnected: boolean;
   lastChecked: Date;
   error?: string;
   fastapi_status: 'connected' | 'disconnected' | 'error';
   mcp_status: 'connected' | 'disconnected' | 'error';
+  mcp_servers?: McpServerStatus[];
 }
 
 /**

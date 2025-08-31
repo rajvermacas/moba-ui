@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { ConnectionStatus } from '../types/chat.types';
+import { ConnectionStatus, McpServerStatus } from '../types/chat.types';
 import { apiService } from '../services/api';
 
 interface UseConnectionStatusProps {
@@ -43,11 +43,21 @@ export const useConnectionStatus = ({
       
       let mcpConnected = false;
       let mcpError: string | undefined;
+      let mcpServers: McpServerStatus[] = [];
 
       try {
         // Check MCP server status through FastAPI
         const mcpResponse = await apiService.getMcpStatus();
         mcpConnected = mcpResponse.connected === true;
+        
+        // Parse individual MCP servers
+        if (mcpResponse.servers && Array.isArray(mcpResponse.servers)) {
+          mcpServers = mcpResponse.servers.map((serverName: string) => ({
+            name: serverName,
+            status: mcpConnected ? 'connected' : 'error'
+          } as McpServerStatus));
+        }
+        
         if (!mcpConnected && mcpResponse.error) {
           mcpError = mcpResponse.error;
         }
@@ -60,6 +70,7 @@ export const useConnectionStatus = ({
         lastChecked: now,
         fastapi_status: fastapiConnected ? 'connected' : 'error',
         mcp_status: mcpConnected ? 'connected' : 'error',
+        mcp_servers: mcpServers,
         error: !fastapiConnected 
           ? 'FastAPI server unreachable'
           : !mcpConnected 
@@ -75,6 +86,7 @@ export const useConnectionStatus = ({
         lastChecked: now,
         fastapi_status: 'error',
         mcp_status: 'disconnected',
+        mcp_servers: [],
         error: errorMessage
       });
     }
