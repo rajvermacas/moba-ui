@@ -2,7 +2,7 @@
  * Main chat interface component with modern Tailwind CSS design
  */
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { RotateCcw, Trash2, AlertTriangle, Sun, Moon } from 'lucide-react';
 import { useChat } from '../hooks/useChat';
 import { useConnectionStatus } from '../hooks/useConnectionStatus';
@@ -20,7 +20,6 @@ interface ChatInterfaceProps {
 }
 
 const ChatInterface: React.FC<ChatInterfaceProps> = ({ className = '' }) => {
-  
   // Theme functionality
   const { isDark, toggleTheme } = useTheme();
   
