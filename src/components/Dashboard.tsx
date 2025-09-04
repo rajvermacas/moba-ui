@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { DataQualityRecord, DashboardMetrics, UrgentAttentionItem, FilterState } from '@/types/dashboard.types';
-import { processCSVData, calculateDashboardMetrics, getUrgentAttentionItems } from '@/lib/dataProcessor';
 import { useTheme } from '@/contexts/ThemeContext';
 import { MetricsCards } from '@/components/features/MetricsCards';
 import { UrgentAttentionWidget } from '@/components/features/UrgentAttentionWidget';
@@ -14,69 +13,20 @@ import { AIQuerySection } from '@/components/features/AIQuerySection';
 import { ChartWithFilters } from '@/components/features/ChartWithFilters';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 
-interface DashboardState {
+interface DashboardProps {
   data: DataQualityRecord[];
   metrics: DashboardMetrics;
   urgentItems: UrgentAttentionItem[];
   loading: boolean;
   error: string | null;
+  onRetry: () => void;
 }
 
-export function Dashboard() {
+export function Dashboard({ data, metrics, urgentItems, loading, error, onRetry }: DashboardProps) {
   const {} = useTheme();
-  const [state, setState] = useState<DashboardState>({
-    data: [],
-    metrics: {
-      totalDatasets: 0,
-      urgentAttentionCount: 0,
-      averageFailRate: 0,
-      trendingDown: 0,
-      trendingUp: 0,
-      trendingFlat: 0
-    },
-    urgentItems: [],
-    loading: true,
-    error: null
-  });
-
   const [filters, setFilters] = useState<FilterState>({ interval: 'all' });
   const [activeView, setActiveView] = useState<'trends' | 'heatmap' | 'matrix'>('trends');
   const trendChartRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    loadDashboardData();
-  }, []);
-
-  const loadDashboardData = async () => {
-    try {
-      setState(prev => ({ ...prev, loading: true, error: null }));
-      
-      const response = await fetch('/resources/artifacts/full_summary.csv');
-      if (!response.ok) {
-        throw new Error('Failed to fetch data');
-      }
-      
-      const csvText = await response.text();
-      const parsedData = processCSVData(csvText);
-      const metrics = calculateDashboardMetrics(parsedData);
-      const urgentItems = getUrgentAttentionItems(parsedData);
-
-      setState({
-        data: parsedData,
-        metrics,
-        urgentItems,
-        loading: false,
-        error: null
-      });
-    } catch (error) {
-      console.error('Error loading dashboard data:', error);
-      setState(prev => ({
-        ...prev,
-        loading: false,
-        error: 'Error loading dashboard data'
-      }));
-    }
-  };
 
   const handleTrendClick = (trend: 'down' | 'up' | 'equal') => {
     // Set the trend filter
@@ -112,7 +62,7 @@ export function Dashboard() {
     }, 100);
   };
 
-  if (state.loading) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center glass p-8 rounded-xl">
@@ -123,14 +73,14 @@ export function Dashboard() {
     );
   }
 
-  if (state.error) {
+  if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center glass p-8 rounded-xl">
           <div className="text-red-600 dark:text-red-400 text-xl mb-4">⚠️</div>
-          <p className="text-red-600 dark:text-red-400">{state.error}</p>
+          <p className="text-red-600 dark:text-red-400">{error}</p>
           <button
-            onClick={loadDashboardData}
+            onClick={onRetry}
             className="mt-4 btn-primary"
           >
             Retry
@@ -152,10 +102,10 @@ export function Dashboard() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-8">
           {/* Metrics Overview */}
-          <MetricsCards metrics={state.metrics} onTrendClick={handleTrendClick} />
+          <MetricsCards metrics={metrics} onTrendClick={handleTrendClick} />
 
           {/* Urgent Attention Widget */}
-          <UrgentAttentionWidget items={state.urgentItems} />
+          <UrgentAttentionWidget items={urgentItems} />
 
           {/* AI Query Section */}
           <AIQuerySection />
@@ -164,7 +114,7 @@ export function Dashboard() {
             {/* Filter Panel */}
             <div className="lg:col-span-1">
               <FilterPanel
-                data={state.data}
+                data={data}
                 filters={filters}
                 onFiltersChange={setFilters}
               />
@@ -214,31 +164,31 @@ export function Dashboard() {
               {/* Visualization Component */}
               {activeView === 'trends' && (
                 <ChartWithFilters
-                  data={state.data}
+                  data={data}
                   filters={filters}
                   onFiltersChange={setFilters}
                 >
                   <ErrorBoundary componentName="TrendChart">
-                    <TrendChart data={state.data} filters={filters} />
+                    <TrendChart data={data} filters={filters} />
                   </ErrorBoundary>
                 </ChartWithFilters>
               )}
               {activeView === 'heatmap' && (
                 <ChartWithFilters
-                  data={state.data}
+                  data={data}
                   filters={filters}
                   onFiltersChange={setFilters}
                 >
-                  <Heatmap data={state.data} filters={filters} />
+                  <Heatmap data={data} filters={filters} />
                 </ChartWithFilters>
               )}
               {activeView === 'matrix' && (
                 <ChartWithFilters
-                  data={state.data}
+                  data={data}
                   filters={filters}
                   onFiltersChange={setFilters}
                 >
-                  <SystemHealthMatrix data={state.data} filters={filters} />
+                  <SystemHealthMatrix data={data} filters={filters} />
                 </ChartWithFilters>
               )}
             </div>

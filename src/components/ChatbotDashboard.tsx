@@ -1,15 +1,79 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ChatInterface from './ChatInterface';
 import { Dashboard } from './Dashboard';
 import { useTheme } from '@/contexts/ThemeContext';
 import { ChevronLeft, ChevronRight, MessageSquare, BarChart3, Moon, Sun } from 'lucide-react';
+import { DataQualityRecord, DashboardMetrics, UrgentAttentionItem } from '@/types/dashboard.types';
+import { processCSVData, calculateDashboardMetrics, getUrgentAttentionItems } from '@/lib/dataProcessor';
+
+interface DashboardState {
+  data: DataQualityRecord[];
+  metrics: DashboardMetrics;
+  urgentItems: UrgentAttentionItem[];
+  loading: boolean;
+  error: string | null;
+}
 
 export function ChatbotDashboard() {
   const { theme, toggleTheme } = useTheme();
   const [activeView, setActiveView] = useState<'chat' | 'dashboard' | 'split'>('split');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  
+  // Dashboard data state - lifted from Dashboard component
+  const [dashboardState, setDashboardState] = useState<DashboardState>({
+    data: [],
+    metrics: {
+      totalDatasets: 0,
+      urgentAttentionCount: 0,
+      averageFailRate: 0,
+      trendingDown: 0,
+      trendingUp: 0,
+      trendingFlat: 0
+    },
+    urgentItems: [],
+    loading: true,
+    error: null
+  });
+
+  // Load dashboard data once on mount
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
+
+  const loadDashboardData = async () => {
+    try {
+      console.log('[ChatbotDashboard] Loading CSV data...');
+      setDashboardState(prev => ({ ...prev, loading: true, error: null }));
+      
+      const response = await fetch('/resources/artifacts/full_summary.csv');
+      if (!response.ok) {
+        throw new Error('Failed to fetch data');
+      }
+      
+      const csvText = await response.text();
+      const parsedData = processCSVData(csvText);
+      const metrics = calculateDashboardMetrics(parsedData);
+      const urgentItems = getUrgentAttentionItems(parsedData);
+
+      console.log('[ChatbotDashboard] CSV data loaded successfully');
+      setDashboardState({
+        data: parsedData,
+        metrics,
+        urgentItems,
+        loading: false,
+        error: null
+      });
+    } catch (error) {
+      console.error('[ChatbotDashboard] Error loading dashboard data:', error);
+      setDashboardState(prev => ({
+        ...prev,
+        loading: false,
+        error: 'Error loading dashboard data'
+      }));
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors">
@@ -94,7 +158,14 @@ export function ChatbotDashboard() {
         {/* Dashboard View */}
         {activeView === 'dashboard' && (
           <div className="w-full h-full overflow-auto">
-            <Dashboard />
+            <Dashboard 
+              data={dashboardState.data}
+              metrics={dashboardState.metrics}
+              urgentItems={dashboardState.urgentItems}
+              loading={dashboardState.loading}
+              error={dashboardState.error}
+              onRetry={loadDashboardData}
+            />
           </div>
         )}
 
@@ -134,7 +205,14 @@ export function ChatbotDashboard() {
             <div className={`${
               sidebarCollapsed ? 'w-full' : 'w-2/3'
             } transition-all duration-300 overflow-auto`}>
-              <Dashboard />
+              <Dashboard 
+                data={dashboardState.data}
+                metrics={dashboardState.metrics}
+                urgentItems={dashboardState.urgentItems}
+                loading={dashboardState.loading}
+                error={dashboardState.error}
+                onRetry={loadDashboardData}
+              />
             </div>
           </>
         )}
